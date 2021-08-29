@@ -130,8 +130,9 @@ def iterative_test():
     graph_shower.make_graph_png_with_lines(nodes, edges)
 
 def main():
-    iterative_test()
+    # iterative_test()
     # eigen_walk_finder.eigen_test()
+    eigen_walk_finder.dim_reduce_eigen_test()
 
 if __name__ == '__main__':
     main()
