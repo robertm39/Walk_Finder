@@ -45,7 +45,8 @@ def get_dist_matrix(n, distances):
     for i in range(n):
         for j in range(i, n):
             if i == j:
-                result[i, j] = distances[i, j]
+                dist = distances[i, j]
+                result[i, j] = dist
             else:
                 dist = distances[i, j]
                 result[i, j] = dist
@@ -83,8 +84,8 @@ def dim_reduce_eigen(n, edges, lr=0.01, num_steps_per_dim=100):
     #Just optimize the distance matrix so that it ends up two-dimensional
     #That is, with only two nonzero singular values
     
-    if isinstance(num_steps_per_dim, int):
-        num_steps_per_dim = [num_steps_per_dim] * (n-2)
+    # if isinstance(num_steps_per_dim, int):
+    #     num_steps_per_dim = [num_steps_per_dim] * (n-2)
     
     #Initialize the distances and get the parameters
     distances = dict()
@@ -105,25 +106,32 @@ def dim_reduce_eigen(n, edges, lr=0.01, num_steps_per_dim=100):
     
     optimizer = optim.Adam(params, lr=lr)
     
-    step = 0
-    for num_dims in range(n-1, 1, -1):
-        print('Num target dims: {}'.format(num_dims))
-        num_steps = num_steps_per_dim[step]
-        for i in range(1, num_steps+1):
-            dist_matrix = get_dist_matrix(n, distances)
-            svd_loss = get_singular_value_loss(dist_matrix, num_dims)
-            end_loss = get_singular_value_loss(dist_matrix, 2)
-            svd_loss.backward()
-            
-            with torch.no_grad():
-                optimizer.step()
-                optimizer.zero_grad()
-            
-            if i % 200 == 0:
-                s = '{:5d} steps:   loss={:.4f}, end loss={:.4f}'
-                print(s.format(i, svd_loss.item(), end_loss.item()))
-        print('')
-        step += 1
+    
+    for p in params:
+        print(p.data.item())
+    
+    # step = 0
+    # for num_dims in range(n-1, 1, -1):
+    #     print('Num target dims: {}'.format(num_dims))
+    #     num_steps = num_steps_per_dim[step]
+    for i in range(1, num_steps_per_dim):
+        dist_matrix = get_dist_matrix(n, distances)
+        svd_loss = get_singular_value_loss(dist_matrix, 2)
+        # end_loss = get_singular_value_loss(dist_matrix, 2)
+        svd_loss.backward()
+        
+        with torch.no_grad():
+            optimizer.step()
+            optimizer.zero_grad()
+        
+        if i % 200 == 0:
+            # s = '{:5d} steps:   loss={:.4f}, end loss={:.4f}'
+            s = '{:5d} steps:   loss={:.4f}'
+            print(s.format(i, svd_loss.item()))
+            for p in params:
+                print(p.data.item())
+        # print('')
+        # step += 1
     
     dist_matrix = get_dist_matrix(n, distances)
     print(dist_matrix)
@@ -153,7 +161,8 @@ def dim_reduce_eigen_test():
     # num_steps = [400, 400, 400, 2000, 10000]
     
     #            3     2
-    num_steps = [2000, 2000]
+    # num_steps = [2000, 2000]
+    num_steps = 5000
     fit = dim_reduce_eigen(n, edges, num_steps_per_dim=num_steps)
 
 # def eigen_test():
