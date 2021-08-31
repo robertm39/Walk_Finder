@@ -45,6 +45,12 @@ class SubWalk:
     def nodes_in_common(self, other):
         return self.nodes.intersection(other.nodes)
     
+    def copy(self):
+        coords_from_nodes = dict()
+        for node, coords in self.cords_from_nodes.items():
+            coords_from_nodes[node] = coords.copy()
+        return SubWalk(coords_from_nodes)
+    
     #Can be used as keys, but equality is exact object equality
     #Do not ever have equivalent groups in the same map
     def __hash__(self):
@@ -58,6 +64,24 @@ def get_triangle_subwalk(n1, n2, n3):
     
     return SubWalk(coords_from_nodes)
 
+# class SetKey:
+#     def __init__(self, s):
+#         self.s = s
+        
+#         self.hash = 17
+#         for h in sorted([hash(i) for i in self.s]):
+#             self.hash += h
+#             self.hash *= 31
+    
+#     def __eq__(self, other):
+#         return self.s == other.s
+    
+#     def __neq__(self, other):
+        
+    
+#     def __hash__(self):
+#         return self,hash
+
 class SubWalks:
     """
     Keep track of all the current subwalks.
@@ -65,16 +89,74 @@ class SubWalks:
     def __init__(self):
         self.subwalks = set()
         self.subwalks_from_nodes = dict()
+        self.pairs_from_num_common = dict()
+        self.pairs_from_subwalks = dict()
     
     def add_subwalk(self, subwalk):
         if subwalk in self.subwalks:
             raise ValueError('Duplicate subwalk: {}'.format(subwalk))
             
         self.subwalks.add(subwalk)
+        
+        subwalks_with_common_node = set()
         for node in subwalk.nodes:
             if not node in self.subwalks_from_nodes:
                 self.subwalks_from_nodes[node] = set()
+                
+            for sw2 in self.subwalks_from_nodes[node]:
+                subwalks_with_common_node.add(sw2)
+                
             self.subwalks_from_nodes[node].add(subwalk)
+        
+        pairs = set()
+        self.pairs_from_subwalks[subwalk] = pairs
+        for sw2 in subwalks_with_common_node:
+            num_common = len(subwalk.nodes_in_common(sw2))
+            if num_common >= 2:
+                if not num_common in self.pairs_from_num_common:
+                    self.pairs_from_num_common[num_common] = set()
+                self.pairs_from_num_common[num_common].add((subwalk, sw2))
+                pairs.add((subwalk, sw2, num_common))
+                
+                #Almost forgot this part
+                self.pairs_from_subwalks[sw2].add((subwalk, sw2, num_common))
+        
+        # for node in subwalk.nodes:
+        #     if not node in self.subwalks_from_nodes:
+        #         self.subwalks_from_nodes[node] = set()
+        #     self.subwalks_from_nodes[node].add(subwalk)
+    
+    def remove_subwalk(self, subwalk):
+        if not subwalk in self.subwalks:
+            raise ValueError('Subwalk not in subwalks: {}'.format(subwalk))
+        
+        self.subwalks.remove(subwalk)
+        
+        for node in subwalk.nodes:
+            self.subwalks_from_nodes[node].remove(subwalk)
+        
+        for sw1, sw2, num_common in self.pairs_from_subwalks[subwalk]:
+            self.pairs_from_num_common[num_common].remove((sw1, sw2))
+            self.pairs_from_subwalks[sw1].remove((sw1, sw2, num_common))
+            self.pairs_from_subwalks[sw2].remove((sw1, sw2, num_common))
+        
+        del self.pairs_from_subwalks[subwalk]
+    
+    def copy(self):
+        copy = SubWalks()
+        for subwalk in self.subwalks:
+            copy.add_subwalk(subwalk.copy())
+        return copy
+
+class CheckPoint:
+    """
+    A state to go back to if embedding fails.
+    """
+    def __init__(self, subwalks, sw1, sw2, mergings):
+        self.subwalks = subwalks.copy()
+        self.sw1 = sw1.copy()
+        self.sw2 = sw2.copy()
+        self.mergings = mergings
 
 def add_triangle_subwalks(graph, subwalks):
     """
@@ -148,7 +230,7 @@ def union_subwalk(sw1, sw2):
     Return the union of two subwalks. To be used on aligned subwalks
     with no overlaps.
     """
-    coords_from_nodes = sw1.coords_from_nodes.copy()
+    coords_from_nodes = sw1.copy().coords_from_nodes
     coords_from_nodes.update(sw2.coords_from_nodes)
     
     return SubWalk(coords_from_nodes)
@@ -183,6 +265,8 @@ def merge_subwalks_with_two_common_nodes(sw1, sw2):
     Return a lost of subwalks containing both the nodes in sw1 and sw2,
     assuming they share exactly two nodes.
     """
+    sw1 = sw1.copy()
+    sw2 = sw2.copy()
     
     common_nodes = sw1.nodes_in_common(sw2)
     
@@ -242,4 +326,4 @@ def build_walk(n, edges):
     #Initialize the subwalks collection with all triangles.
     add_triangle_subwalks(graph, subwalks)
     
-    
+    #Iteratively merge subwalks
