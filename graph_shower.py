@@ -9,6 +9,8 @@ from IPython.display import display
 
 import numpy as np
 
+import torch as torch
+
 from PIL import Image, ImageDraw
 
 def to_image_coords(point, min_x, min_y, wid, padding, dims):
@@ -59,6 +61,11 @@ def get_im_points(nodes, dims=(500, 500)):
     
     return im_points, im_arr
 
+def tensor_from_list(nodes):
+    t_nodes = [torch.tensor(node) for node in nodes]
+    return torch.stack(t_nodes, dim=0)
+
+#Nodes is a pytorch tensor
 def make_graph_png(nodes, edges, dims=(500, 500)):
     points = list()
     xs = list()

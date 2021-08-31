@@ -9,12 +9,17 @@ import math
 
 import numpy as np
 
+import file_reader
+import graph_shower
+
 SQRT_3_OVER_4 = math.sqrt(3) / 2
 
 #Maybe change to long double for more precise equality tests
 #(since this is very important) 
 #Actually long double isn't any longer on this platform
 DTYPE = np.double
+
+CONTINUE = object()
 
 def coords(x, y):
     return np.array([x, y], dtype=DTYPE)
@@ -415,7 +420,36 @@ def merge_subwalks_with_two_common_nodes(sw1, sw2, graph):
     
     return result
 
-def merge_subwalks_with_one_common_node(sw1, sw2, graph):
+def find_edge_between(sw1, sw2, graph):
+    #Find two connected nodes, where none are common to both subwalks
+    common_nodes = sw1.nodes_in_common(sw2)
+    node_1 = None
+    node_2 = None
+    done = False
+    for n1 in sw1:
+        if done:
+            break
+        if n1 in common_nodes:
+            continue
+        for n2 in graph.adjacent(n1):
+            if not n2 in sw2:
+                continue
+            if n2 in common_nodes:
+                continue
+            
+            #We've found an edge
+            done = True
+            node_1 = n1
+            node_2 = n2
+            break
+    
+    if node_1 is None:
+        return False
+    if node_2 is None:
+        return False
+    return node_1, node_2
+
+def merge_subwalks_with_one_common_node(sw1, sw2, node_1, node_2, graph):
     """
     Merge two subwalks with one common node and at least one edge between them.
     """
@@ -433,28 +467,30 @@ def merge_subwalks_with_one_common_node(sw1, sw2, graph):
     translate_subwalk(-sw1.coords_from_nodes[common], sw1)
     translate_subwalk(-sw2.coords_from_nodes[common], sw2)
     
-    #Find two connected nodes, where none are the common node
-    node_1 = None
-    node_2 = None
-    done = False
-    for n1 in sw1:
-        if done:
-            break
-        if n1 == common:
-            continue
-        for n2 in graph.adjacent(n1):
-            if not n2 in sw2:
-                continue
-            if n2 == common:
-                continue
-            
-            #We've found an edge
-            done = True
-            node_1 = n1
-            node_2 = n2
-            break
+    #node_1 and node_2 are supplied now
     
-    #Now node_1 and node_2 are two connected nodes
+    # #Find two connected nodes, where none are the common node
+    # node_1 = None
+    # node_2 = None
+    # done = False
+    # for n1 in sw1:
+    #     if done:
+    #         break
+    #     if n1 == common:
+    #         continue
+    #     for n2 in graph.adjacent(n1):
+    #         if not n2 in sw2:
+    #             continue
+    #         if n2 == common:
+    #             continue
+            
+    #         #We've found an edge
+    #         done = True
+    #         node_1 = n1
+    #         node_2 = n2
+    #         break
+    
+    # #Now node_1 and node_2 are two connected nodes
     
     #Rotate sw1 and sw2 so node_1 and node_2 are on the x-axis
     node_1_angle = find_angle(common, node_1, sw1)
@@ -523,7 +559,10 @@ def merge_subwalks(sw1, sw2, graph):
     
     #Merge by aligning one point and making one edge work, and maybe mirroring
     if num_common == 1:
-        return merge_subwalks_with_one_common_node(sw1, sw2, graph)
+        edge = find_edge_between(sw1, sw2, graph)
+        if edge:
+            return merge_subwalks_with_one_common_node(sw1, sw2, *edge, graph)
+        return CONTINUE #Not enough information
     
     #TODO merging subwalks with no common nodes but multiple edges
     return list()
@@ -555,10 +594,13 @@ def build_walk(graph, subwalks=None):
         
         most_overlap = max(overlaps)
         most_overlap_pairs = subwalks.pairs_from_num_common[most_overlap]
-        if most_overlap_pairs:
-            sw1, sw2 = next(iter(most_overlap_pairs))
+        for sw1, sw2 in most_overlap_pairs:
+            # sw1, sw2 = next(iter(most_overlap_pairs))
             
             mergings = merge_subwalks(sw1, sw2, graph)
+            if mergings is CONTINUE:
+                continue
+            
             if not mergings:
                 #They can't be merged, nor can they ever, so we've failed
                 #give up and notify the caller
@@ -594,7 +636,9 @@ def build_walk(graph, subwalks=None):
                 #Merging the two subwalks in any way doesn't work
                 #give up and notify the caller
                 return False
-        
+            
+            #This loop is only supposed to do one merge
+            break
         else:
             return False
         #Deal with mergers where we don't have any overlaps
@@ -602,25 +646,51 @@ def build_walk(graph, subwalks=None):
 def walk_builder_test():
     # #First is the simple diamond
     # edges = ((0, 1),
-    #          (0, 2),
-    #          (1, 2),
-    #          (1, 3),
-    #          (2, 3))
+    #           (0, 2),
+    #           (1, 2),
+    #           (1, 3),
+    #           (2, 3))
     # n = 4
     
-    #Next test is the graph that needs four colors
-    edges = ((0, 1),
-             (0, 2),
-             (0, 3),
-             (1, 2),
-             (1, 4),
-             (2, 3),
-             (3, 5),
-             (3, 6),
-             (4, 5),
-             (4, 6),
-             (5, 6))
-    n = 7
+    # #Next test is the graph that needs four colors
+    # edges = ((0, 1),
+    #          (0, 2),
+    #          (0, 3),
+    #          (1, 2),
+    #          (1, 4),
+    #          (2, 3),
+    #          (3, 5),
+    #          (3, 6),
+    #          (4, 5),
+    #          (4, 6),
+    #          (5, 6))
+    # n = 7
+    
+    # #The next test is a hexagonal lattice
+    # edges = ((0, 1),
+    #           (0, 3),
+    #           (0, 4),
+    #           (1, 2),
+    #           (1, 4),
+    #           (1, 5),
+    #           (2, 5),
+    #           (2, 6),
+    #           (3, 4),
+    #           (3, 7),
+    #           (4, 5),
+    #           (4, 7),
+    #           (4, 8),
+    #           (5, 6),
+    #           (5, 8),
+    #           (5, 9),
+    #           (6, 9),
+    #           (7, 8),
+    #           (8, 9))
+    # n = 10
+    
+    #The next test is Heule's 529 graph with chromatic number 5.
+    edges = file_reader.edges_from_file('heule_529.txt')
+    n = 529
     
     nodes = range(n)
     graph = Graph(nodes, edges)
@@ -628,7 +698,13 @@ def walk_builder_test():
     walk = build_walk(graph)
     if walk:
         print('Succeeded!')
+        coords_list = list()
         for node in nodes:
-            print(walk.coords_from_nodes[node])
+            coords = walk.coords_from_nodes[node]
+            print(coords)
+            coords_list.append(coords)
+        # coords = [coords for _, coords in walk.coords_from_nodes.items()]
+        tensor = graph_shower.tensor_from_list(coords_list)
+        graph_shower.make_graph_png_with_lines(tensor, edges, dims=(800, 800))
     else:
         print('Failed')
