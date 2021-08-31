@@ -22,6 +22,7 @@ def coords(x, y):
 class Graph:
     def __init__(self, nodes, edges):
         self.edge_dict = dict()
+        self.nodes = set(nodes)
         for node in nodes:
             self.edge_dict[node] = set()
         for n1, n2 in edges:
@@ -63,11 +64,23 @@ class SubWalk:
         return node in self.nodes
     
 def get_triangle_subwalk(n1, n2, n3):
+    """
+    Return a subwalk containing the three given nodes in a triangle.
+    """
     coords_from_nodes = dict()
     coords_from_nodes[n1] = coords(0, 0)
     coords_from_nodes[n2] = coords(1, 0)
     coords_from_nodes[n3] = coords(0.5, SQRT_3_OVER_4)
     
+    return SubWalk(coords_from_nodes)
+
+def get_edge_subwalk(n1, n2):
+    """
+    Return a subwalk containing the two given nodes on an edge
+    """
+    coords_from_nodes = dict()
+    coords_from_nodes[n1] = coords(0, 0)
+    coords_from_nodes[n2] = coords(1, 0)
     return SubWalk(coords_from_nodes)
 
 # class SetKey:
@@ -176,6 +189,7 @@ def add_triangle_subwalks(graph, subwalks):
     """
     checked_nodes = set()
     
+    nodes_in_triangles = set()
     #For each node, check for triangles involving that node
     #and not involving nodes already checked
     for n1 in graph:
@@ -192,8 +206,25 @@ def add_triangle_subwalks(graph, subwalks):
                 if n3 in sub_checked_nodes:
                     continue
                 if graph.has_edge(n3, n1): #We found a triangle
+                    nodes_in_triangles.add(n1)
+                    nodes_in_triangles.add(n2)
+                    nodes_in_triangles.add(n3)
                     triangle_subwalk = get_triangle_subwalk(n1, n2, n3)
                     subwalks.add_subwalk(triangle_subwalk)
+    
+    #Also add edges for all nodes that aren't in triangles
+    checked_nodes = nodes_in_triangles
+    for n1 in graph:
+        if n1 in checked_nodes:
+            continue
+        checked_nodes.add(n1)
+        for n2 in graph.adjacent(n1):
+            if n2 in checked_nodes:
+                continue
+            edge_subwalk = get_edge_subwalk(n1, n2)
+            subwalks.add_subwalk(edge_subwalk)
+
+    #There won't be any free-floating nodes
 
 def find_angle(n1, n2, subwalk):
     coords_1 = subwalk.coords_from_nodes[n1]
@@ -249,7 +280,7 @@ def union_subwalk(sw1, sw2):
     with no overlaps.
     """
     coords_from_nodes = sw1.copy().coords_from_nodes
-    coords_from_nodes.update(sw2.coords_from_nodes)
+    coords_from_nodes.update(sw2.copy().coords_from_nodes) #maybe don't copy
     
     return SubWalk(coords_from_nodes)
 
@@ -292,7 +323,7 @@ def check_connected_nodes(sw1, sw2, graph, eps=1e-10):
             if n2 in sw2:
                 c2 = sw2.coords_from_nodes[n2]
                 diff = c2 - c1
-                print('diff: {}'.format(diff))
+                # print('diff: {}'.format(diff))
                 dist = np.hypot(*diff)
                 if not np.allclose(dist, 1.0, rtol=0, atol=eps):
                     return False
@@ -384,17 +415,119 @@ def merge_subwalks_with_two_common_nodes(sw1, sw2, graph):
     
     return result
 
+def merge_subwalks_with_one_common_node(sw1, sw2, graph):
+    """
+    Merge two subwalks with one common node and at least one edge between them.
+    """
+    sw1 = sw1.copy()
+    sw2 = sw2.copy()
+    
+    common_nodes = sw1.nodes_in_common(sw2)
+    if len(common_nodes) != 1:
+        s = 'Subwalks should have 1 common node, got {}'
+        raise ValueError(s.format(len(common_nodes)))
+    
+    common = next(iter(common_nodes))
+    
+    #Translate the subwalks so that the common node is at the origin
+    translate_subwalk(-sw1.coords_from_nodes[common], sw1)
+    translate_subwalk(-sw2.coords_from_nodes[common], sw2)
+    
+    #Find two connected nodes, where none are the common node
+    node_1 = None
+    node_2 = None
+    done = False
+    for n1 in sw1:
+        if done:
+            break
+        if n1 == common:
+            continue
+        for n2 in graph.adjacent(n1):
+            if not n2 in sw2:
+                continue
+            if n2 == common:
+                continue
+            
+            #We've found an edge
+            done = True
+            node_1 = n1
+            node_2 = n2
+            break
+    
+    #Now node_1 and node_2 are two connected nodes
+    
+    #Rotate sw1 and sw2 so node_1 and node_2 are on the x-axis
+    node_1_angle = find_angle(common, node_1, sw1)
+    node_2_angle = find_angle(common, node_2, sw2)
+    
+    rotate_subwalk(-node_1_angle, sw1)
+    rotate_subwalk(-node_2_angle, sw2)
+    
+    #Now both node_1 and node_2 are on the x-axis
+    #now I need to find theta
+    x_1 = sw1.coords_from_nodes[node_1][0]
+    dist = sw2.coords_from_nodes[node_2][0]
+    
+    num = dist**2 + x_1**2 - 1
+    denom = 2*dist*x_1
+    
+    theta = np.arccos(num / denom)
+    
+    #It doesn't work
+    if np.isnan(theta):
+        return list()
+    
+    #Now there are four combinations:
+    #Either mirror or don't,
+    #and either negate theta or don't.
+    #check all.
+    
+    result = list()
+    #First: don't mirror, don't negate theta.
+    sw2_copy = sw2.copy()
+    rotate_subwalk(theta, sw2_copy)
+    if check_validity(sw1, sw2_copy, graph):
+        merged = union_subwalk(sw1, sw2_copy)
+        result.append(merged)
+    
+    #Second: don't mirror, do negate theta.
+    sw2_copy = sw2.copy()
+    rotate_subwalk(-theta, sw2_copy)
+    if check_validity(sw1, sw2_copy, graph):
+        merged = union_subwalk(sw1, sw2_copy)
+        result.append(merged)
+    
+    #Third: do mirror, don't negate theta
+    sw2_copy = sw2.copy()
+    reflect_subwalk(sw2_copy)
+    rotate_subwalk(theta, sw2_copy)
+    if check_validity(sw1, sw2_copy, graph):
+        merged = union_subwalk(sw1, sw2_copy)
+        result.append(merged)
+    
+    #Fourth: do mirror, do negate theta
+    sw2_copy = sw2.copy()
+    reflect_subwalk(sw2_copy)
+    rotate_subwalk(-theta, sw2_copy)
+    if check_validity(sw1, sw2_copy, graph):
+        merged = union_subwalk(sw1, sw2_copy)
+        result.append(merged)
+    
+    return result
+    
 def merge_subwalks(sw1, sw2, graph):
     num_common = len(sw1.nodes_in_common(sw2))
+    #Merge by aligning two points and maybe mirroring
     if num_common >= 2:
         return merge_subwalks_with_two_common_nodes(sw1, sw2, graph)
     
-    #TODO implement the rest
+    #Merge by aligning one point and making one edge work, and maybe mirroring
+    if num_common == 1:
+        return merge_subwalks_with_one_common_node(sw1, sw2, graph)
     
-    #this will involve subwalks that share one common node
-    #and at least one connection
-    #or maybe even subwalks that share no nodes, but have multiple connections
-        
+    #TODO merging subwalks with no common nodes but multiple edges
+    return list()
+
 def build_walk(graph, subwalks=None):
     """
     Return a graph where the nodes linked by edges have unit distance.
@@ -417,47 +550,84 @@ def build_walk(graph, subwalks=None):
             #Return the single subwalk remaining
             return next(iter(subwalks.subwalks))
     
-        most_overlap = max(subwalks.pairs_from_num_common)
+        overlaps = set(subwalks.pairs_from_num_common)
+        overlaps = [o for o in overlaps if subwalks.pairs_from_num_common[o]]
+        
+        most_overlap = max(overlaps)
         most_overlap_pairs = subwalks.pairs_from_num_common[most_overlap]
-        sw1, sw2 = next(iter(most_overlap_pairs))
+        if most_overlap_pairs:
+            sw1, sw2 = next(iter(most_overlap_pairs))
+            
+            mergings = merge_subwalks(sw1, sw2, graph)
+            if not mergings:
+                #They can't be merged, nor can they ever, so we've failed
+                #give up and notify the caller
+                return False
+            
+            #This is gonna happen either way
+            subwalks.remove_subwalk(sw1)
+            subwalks.remove_subwalk(sw2)
+            
+            #If there's only one merging, no need for recursion
+            if len(mergings) == 1:
+                merging = mergings[0]
+                
+                #If it has all the nodes, it works
+                #even if there are other ways
+                #Without this, the algorithm would interpret
+                #multiple successes as a failure
+                if merging.nodes == graph.nodes:
+                    return merging
+                subwalks.add_subwalk(mergings[0])
+            else: #There are multiple possible mergings, try each recursively
+                for merging in mergings: #Here is where it branches
+                    
+                    if merging.nodes == graph.nodes:
+                        return merging
+                    
+                    r_subwalks = subwalks.copy()
+                    r_subwalks.add_subwalk(merging)
+                    r_result = build_walk(graph, r_subwalks)
+                    if r_result:
+                        #Return the single subwalk returned by the child
+                        return r_result
+                #Merging the two subwalks in any way doesn't work
+                #give up and notify the caller
+                return False
         
-        mergings = merge_subwalks(sw1, sw2, graph)
-        if not mergings:
-            #They can't be merged, nor can they ever, so we've failed
-            #give up and notify the caller
+        else:
             return False
-        
-        #This is gonna happen either way
-        subwalks.remove_subwalk(sw1)
-        subwalks.remove_subwalk(sw2)
-        
-        #If there's only one merging, no need for recursion
-        if len(mergings) == 1:
-            subwalks.add_subwalk(mergings[0])
-        else: #There are multiple possible mergings, try each recursively
-            for merging in mergings: #Here is where it branches
-                r_subwalks = subwalks.copy()
-                r_subwalks.add_subwalk(merging)
-                r_result = build_walk(graph, r_subwalks)
-                if r_result:
-                    #Return the single subwalk returned by the child
-                    return r_result
-            #Merging the two subwalks in any way doesn't work
-            #give up and notify the caller
-            return False
+        #Deal with mergers where we don't have any overlaps
 
 def walk_builder_test():
+    # #First is the simple diamond
+    # edges = ((0, 1),
+    #          (0, 2),
+    #          (1, 2),
+    #          (1, 3),
+    #          (2, 3))
+    # n = 4
+    
+    #Next test is the graph that needs four colors
     edges = ((0, 1),
              (0, 2),
+             (0, 3),
              (1, 2),
-             (1, 3),
-             (2, 3))
-    n = 4
+             (1, 4),
+             (2, 3),
+             (3, 5),
+             (3, 6),
+             (4, 5),
+             (4, 6),
+             (5, 6))
+    n = 7
+    
     nodes = range(n)
     graph = Graph(nodes, edges)
     
     walk = build_walk(graph)
     if walk:
+        print('Succeeded!')
         for node in nodes:
             print(walk.coords_from_nodes[node])
     else:
