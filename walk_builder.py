@@ -9,7 +9,7 @@ import math
 
 import numpy as np
 
-SQRT_3_OVER_4 = math.sqrt(3) / 4
+SQRT_3_OVER_4 = math.sqrt(3) / 2
 
 #Maybe change to long double for more precise equality tests
 #(since this is very important) 
@@ -47,7 +47,7 @@ class SubWalk:
     
     def copy(self):
         coords_from_nodes = dict()
-        for node, coords in self.cords_from_nodes.items():
+        for node, coords in self.coords_from_nodes.items():
             coords_from_nodes[node] = coords.copy()
         return SubWalk(coords_from_nodes)
     
@@ -144,7 +144,7 @@ class SubWalks:
         for node in subwalk.nodes:
             self.subwalks_from_nodes[node].remove(subwalk)
         
-        for sw1, sw2, num_common in self.pairs_from_subwalks[subwalk]:
+        for sw1, sw2, num_common in list(self.pairs_from_subwalks[subwalk]):
             self.pairs_from_num_common[num_common].remove((sw1, sw2))
             self.pairs_from_subwalks[sw1].remove((sw1, sw2, num_common))
             self.pairs_from_subwalks[sw2].remove((sw1, sw2, num_common))
@@ -181,19 +181,23 @@ def add_triangle_subwalks(graph, subwalks):
     for n1 in graph:
         #Add now so single edges aren't recognized as degenerate triangles
         checked_nodes.add(n1)
+        sub_checked_nodes = set()
         for n2 in graph.adjacent(n1):
             if n2 in checked_nodes:
                 continue
+            sub_checked_nodes.add(n2)
             for n3 in graph.adjacent(n2):
-                if n3 in checked_nodes: #Maybe get rid of this check
+                if n3 in checked_nodes:
+                    continue
+                if n3 in sub_checked_nodes:
                     continue
                 if graph.has_edge(n3, n1): #We found a triangle
                     triangle_subwalk = get_triangle_subwalk(n1, n2, n3)
                     subwalks.add_subwalk(triangle_subwalk)
 
 def find_angle(n1, n2, subwalk):
-    coords_1 = subwalk.coords_from_nodes(n1)
-    coords_2 = subwalk.coords_from_nodes(n2)
+    coords_1 = subwalk.coords_from_nodes[n1]
+    coords_2 = subwalk.coords_from_nodes[n2]
     diff = coords_2 - coords_1
     angle = math.atan2(diff[1], diff[0])
     return angle
@@ -218,8 +222,8 @@ def rotate_subwalk(theta, subwalk):
     (since none are),
     so it's fine.
     """
-    rot_matrix = np.matrix([[np.cos(theta), -np.sin(theta)],
-                            [np.sin(theta),  np.cos(theta)]], dtype=DTYPE)
+    rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
+                           [np.sin(theta),  np.cos(theta)]], dtype=DTYPE)
     
     for node in subwalk.nodes:
         coords = subwalk.coords_from_nodes[node]
@@ -234,7 +238,9 @@ def reflect_subwalk(subwalk):
     (since none are),
     so it's fine.
     """
-    for node, (x, y) in subwalk.coords_from_nodes.items():
+    for node, crd in subwalk.coords_from_nodes.items():
+        # print(c)
+        x, y = crd[0], crd[1]
         subwalk.coords_from_nodes[node] = coords(x, -y)
 
 def union_subwalk(sw1, sw2):
@@ -250,6 +256,9 @@ def union_subwalk(sw1, sw2):
 #There should be a way to do this faster than quadratic
 #Based on putting nodes into buckets based on their rough coordinates
 #But I'll do it the simpler way for now
+
+#As for epsilon, it seems like errors of the scale occur 1e-16
+#so stay a few orders of magnitude above that
 def check_overlaps(sw1, sw2, eps=1e-10):
     """
     Return whether there are different nodes in the same place
@@ -283,6 +292,7 @@ def check_connected_nodes(sw1, sw2, graph, eps=1e-10):
             if n2 in sw2:
                 c2 = sw2.coords_from_nodes[n2]
                 diff = c2 - c1
+                print('diff: {}'.format(diff))
                 dist = np.hypot(*diff)
                 if not np.allclose(dist, 1.0, rtol=0, atol=eps):
                     return False
@@ -395,6 +405,7 @@ def build_walk(graph, subwalks=None):
     
     if subwalks is None:
         #Initialize the subwalks collection with all triangles.
+        subwalks = SubWalks()
         add_triangle_subwalks(graph, subwalks)
     
     #Repeatedly merge the most promising subwalk until we fail
@@ -434,3 +445,20 @@ def build_walk(graph, subwalks=None):
             #Merging the two subwalks in any way doesn't work
             #give up and notify the caller
             return False
+
+def walk_builder_test():
+    edges = ((0, 1),
+             (0, 2),
+             (1, 2),
+             (1, 3),
+             (2, 3))
+    n = 4
+    nodes = range(n)
+    graph = Graph(nodes, edges)
+    
+    walk = build_walk(graph)
+    if walk:
+        for node in nodes:
+            print(walk.coords_from_nodes[node])
+    else:
+        print('Failed')

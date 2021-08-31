@@ -15,6 +15,7 @@ from torch.nn import Parameter as Parameter
 
 import graph_shower
 import eigen_walk_finder
+import walk_builder
 
 def get_loss(edges, nodes):
     """
@@ -69,7 +70,11 @@ def iterative_test():
     #  .   3
     #This is simple but nontrivial
     
-    edges = ((0, 1), (0, 2), (1, 2), (1, 3), (2, 3))
+    edges = ((0, 1),
+             (0, 2),
+             (1, 2),
+             (1, 3),
+             (2, 3))
     
     # #Next test is the graph that needs four colors
     # edges = ((0, 1),
@@ -132,7 +137,8 @@ def iterative_test():
 def main():
     # iterative_test()
     # eigen_walk_finder.eigen_test()
-    eigen_walk_finder.dim_reduce_eigen_test()
+    # eigen_walk_finder.dim_reduce_eigen_test()
+    walk_builder.walk_builder_test()
 
 if __name__ == '__main__':
     main()
