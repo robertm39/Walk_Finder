@@ -699,12 +699,17 @@ def walk_builder_test():
     if walk:
         print('Succeeded!')
         coords_list = list()
-        for node in nodes:
-            coords = walk.coords_from_nodes[node]
-            print(coords)
-            coords_list.append(coords)
+        with open('calc_coords_529_good.txt', 'w') as file:
+            for node in nodes:
+                coords = walk.coords_from_nodes[node]
+                x, y = coords[0], coords[1]
+                s = '{} {}\n'.format(x, y)
+                file.write(s)
+                # print('{} {}'.format(x, y))
+                coords_list.append(coords)
         # coords = [coords for _, coords in walk.coords_from_nodes.items()]
         tensor = graph_shower.tensor_from_list(coords_list)
-        graph_shower.make_graph_png_with_lines(tensor, edges, dims=(800, 800))
+        dims = (800, 800)
+        graph_shower.make_graph_png_with_lines(tensor, edges, dims=dims)
     else:
         print('Failed')
