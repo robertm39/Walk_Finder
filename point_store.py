@@ -20,6 +20,17 @@ NUM_DECIMALS = 2
 
 #What I thought was the center was actually the lower-left corner
 
+#The cells that could have something in roughly the same place
+SAME_RING = (( 0,  0),
+             ( 1,  0),
+             ( 1,  1),
+             ( 0,  1),
+             (-1,  1),
+             (-1,  0),
+             (-1, -1),
+             ( 0, -1),
+             ( 1, -1))
+
 def get_cell_ring(num_decimals=NUM_DECIMALS):
     width = 10**(-num_decimals)
     num_cells_wide = 10 ** num_decimals #How many cells wide a 1x1 square is
@@ -42,7 +53,7 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
     #between the centers is at most this much
     #(this is an overestimate, which is good anyways)
     
-    cells = list()
+    cells = set()
     
     for dx in range(-num_cells_wide-1, num_cells_wide+2):
         for dy in range(-num_cells_wide-1, num_cells_wide+2):
@@ -72,21 +83,11 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
                     le_one = True
             
             if ge_one and le_one:
-                cell = (dx, dy)
-                cells.append(cell)
+                for dx2, dy2 in SAME_RING:
+                    cell = (dx+dx2, dy+dy2)
+                    cells.add(cell)
     
-    return cells
-
-#The cells that could have something in roughly the same place
-SAME_RING = (( 0,  0),
-             ( 1,  0),
-             ( 1,  1),
-             ( 0,  1),
-             (-1,  1),
-             (-1,  0),
-             (-1, -1),
-             ( 0, -1),
-             ( 1, -1))
+    return list(cells)
 
 def homogenize(num_s):
     """
@@ -206,11 +207,11 @@ class PointStore:
             
             key = (total_x, total_y)
             if not key in self.one_dist_from_cells:
-                self.one_dist_from_cells[key] = set()
+                self.one_dist_from_cells[key] = list()
             
             #Store both the coords and the value in case they're needed
             val = (coords, value)
-            self.one_dist_from_cells[key].add(val)
+            self.one_dist_from_cells[key].append(val)
         
         #Put the value in the appropriate same-place buckets.
         for dx, dy in SAME_RING:
@@ -219,11 +220,11 @@ class PointStore:
             
             key = (total_x, total_y)
             if not key in self.same_from_cells:
-                self.same_from_cells[key] = set()
+                self.same_from_cells[key] = list()
             
             #Store both the coords and the value in case they're needed
             val = (coords, value)
-            self.same_from_cells[key].add(val)
+            self.same_from_cells[key].append(val)
     
     def get_entries_one_away(self, coords):
         x, y = coords[0], coords[1]
@@ -231,7 +232,7 @@ class PointStore:
         y_key = get_key(y, num_decimals=self.num_decimals)
         key = (x_key, y_key)
         
-        return self.one_dist_from_cells.get(key, set())
+        return self.one_dist_from_cells.get(key, list())
     
     def get_entries_in_same_place(self, coords):
         x, y = coords[0], coords[1]
@@ -239,7 +240,7 @@ class PointStore:
         y_key = get_key(y, num_decimals=self.num_decimals)
         key = (x_key, y_key)
         
-        return self.same_from_cells.get(key, set())
+        return self.same_from_cells.get(key, list())
 
 def key_test():
     print(get_key(0.0001))

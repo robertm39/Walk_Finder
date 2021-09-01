@@ -13,6 +13,8 @@ import file_reader
 
 from constants import EPS
 
+import point_store
+
 # EPS = 1e-10
 
 class ColoringState:
@@ -186,11 +188,21 @@ def get_heule_subwalk(offset=0):
     subwalk = walk_builder.SubWalk(coords_from_nodes)
     return subwalk, edges
 
+#Improve this to use PointStore
 def add_new_nodes(walk, graph, eps=EPS):
     """
     Add all points at unit distance from at least two points in the graph.
     Add all edges, even incidental ones.
     """
+    #I can tweak the number of decimals for optimization
+    ps = point_store.PointStore(num_decimals=2)
+    
+    # print('Initializing Point Store')
+    #Initialize the point store
+    for node, coords in walk.items():
+        ps[coords] = node
+    # print('Point Store initialized')
+    
     new_points = list()
     
     checked = set()
@@ -231,32 +243,67 @@ def add_new_nodes(walk, graph, eps=EPS):
     max_node = max(walk)
     current_node = max_node + 1
     
+    using_point_store=True
+    
     for c1 in new_points:
         
         #Find all nodes unit distance from this node and add the edges
         #This node is not in the walk, so no need to check for that
-        adjacent_nodes = list()
-        duplicate = False
-        for n2, c2 in walk.items():
-            diff = c2 - c1
-            dist = np.hypot(*diff)
+        
+        if using_point_store:
+            #See if this node is in the same place as any others
+            duplicate = False
+            for c2, n2 in ps.get_entries_in_same_place(c1):
+                diff = c2 - c1
+                dist = np.hypot(*diff)
+                
+                if np.allclose(dist, 0.0, rtol=0, atol=eps):
+                    duplicate = True
+                    break
             
-            #Add an edge if they have unit distance
-            if np.allclose(dist, 1.0, rtol=0, atol=EPS):
-                adjacent_nodes.append(n2)
-                # graph.add_edge(current_node, n2)
-            #We have a duplicate
-            elif np.allclose(dist, 0.0, rtol=0, atol=EPS):
-                duplicate = True
-                break
-        if duplicate:
-            continue
+            if duplicate:
+                continue
+            
+            adjacent_nodes = list()
+            #Here's where the point store comes in handy
+            #First, find the nodes one away
+            for c2, n2 in ps.get_entries_one_away(c1):
+                diff = c2 - c1
+                dist = np.hypot(*diff)
+                
+                #I still need to test because the point store is only approximate
+                #but this way, I only check a few nodes instead of all of them
+                #Add an edge if they have unit distance
+                if np.allclose(dist, 1.0, rtol=0, atol=eps):
+                    adjacent_nodes.append(n2)
+                    # graph.add_edge(current_node, n2)
+        
+
+        #Here's the old code, to test if they're the same
+        else:
+            adjacent_nodes = []
+            duplicate = False
+            for n2, c2 in walk.items():
+                diff = c2 - c1
+                dist = np.hypot(*diff)
+                
+                #Add an edge if they have unit distance
+                if np.allclose(dist, 1.0, rtol=0, atol=EPS):
+                    adjacent_nodes.append(n2)
+                    # graph.add_edge(current_node, n2)
+                #We have a duplicate
+                elif np.allclose(dist, 0.0, rtol=0, atol=EPS):
+                    duplicate = True
+                    break
+            if duplicate:
+                continue
         
         graph.add_node(current_node)
         for n2 in adjacent_nodes:
             graph.add_edge(current_node, n2)
     
         walk.add_node(current_node, c1)
+        ps[c1] = current_node
         
         current_node += 1
     

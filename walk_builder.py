@@ -778,14 +778,15 @@ def color_test():
     for node, color in coloring.items():
         print('Node {} has color {}'.format(node, color))
 
-def show_walk(nodes, walk, graph):
+def show_walk(nodes, walk, graph, dims=None):
     coords_list = list()
     for node in nodes:
         coords = walk.coords_from_nodes[node]
         coords_list.append(coords)
     
     tensor = graph_shower.tensor_from_list(coords_list)
-    dims = (500, 500)
+    if dims is None:
+        dims = (500, 500)
     graph_shower.make_graph_png_with_lines(tensor, graph.edges(), dims=dims)
 
 def file_test():
@@ -861,21 +862,24 @@ def node_adder_test():
     
     # show_walk(nodes, walk, graph)
     
-    # filename_base = 'spindle_iter_{}.txt'
+    filename_base = 'spindle_iter_{}.txt'
     
-    # file_reader.write_to_file(walk, graph, filename_base.format(0))
+    file_reader.write_to_file(walk, graph, filename_base.format(0))
     
     #Now we add the new nodes
     #We should end up with a diamond the first time
-    for i in range(1, 3):
+    for i in range(1, 4):
         big_graph_finder.add_new_nodes(walk, graph)
-        # file_reader.write_to_file(walk, graph, filename_base.format(i))
+        file_reader.write_to_file(walk, graph, filename_base.format(i))
         
         nodes = sorted(list(walk))
         
         # show_walk(nodes, walk, graph)
     
+    dims = (800, 800)
+    show_walk(nodes, walk, graph, dims=dims)
+    
     #Now try to color it
-    # print('Coloring:')
-    # result = big_graph_finder.color_graph(graph=graph, n_colors=4)
-    # print(result)
+    print('Coloring:')
+    result = big_graph_finder.color_graph(graph=graph, n_colors=4)
+    print(result)
