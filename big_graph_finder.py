@@ -5,11 +5,13 @@ Created on Tue Aug 31 18:11:13 2021
 @author: rober
 """
 
-import queue
+import numpy as np
 
 import walk_builder
 
 import file_reader
+
+EPS = 1e-10
 
 class ColoringState:
     def __init__(self,
@@ -181,6 +183,79 @@ def get_heule_subwalk(offset=0):
     
     subwalk = walk_builder.SubWalk(coords_from_nodes)
     return subwalk, edges
+
+def add_new_nodes(walk, graph, eps=EPS):
+    """
+    Add all points at unit distance from at least two points in the graph.
+    Add all edges, even incidental ones.
+    """
+    new_points = list()
+    
+    checked = set()
+    for n1, c1 in walk.items():
+        checked.add(n1)
+        for n2, c2 in walk.items():
+            # if n1 is n2:
+            #     continue
+            if n2 in checked:
+                continue
+            diff = c2 - c1
+            dist = np.hypot(*diff)
+            #The two nodes are distance two apart
+            #So the point at unit distance from both is their midpoint
+            if np.allclose(dist, 2.0, rtol=0, atol=EPS):
+                half_diff = diff / 2.0
+                midpoint = c1 + half_diff
+                new_points.append(midpoint)
+            elif dist > 2.0: #They're too far apart
+                pass
+            else: #Their distance is less than two
+                half_diff = diff / 2.0
+                midpoint = c1 + half_diff
+                dx, dy = diff[0], diff[1]
+                qv = walk_builder.coords(-dy, dx)
+                qv = qv / dist #The length of q is the length of diff, ie dist.
+                q_len = np.sqrt(1 - (dist*dist / 4))
+                qv = qv * q_len
+                
+                #Now we have the q vector
+                p1 = midpoint + qv
+                p2 = midpoint - qv
+                new_points.append(p1)
+                new_points.append(p2)
+    
+    #Find the highest node, and count up from there
+    #Put the nodes into the walk and 
+    max_node = max(walk)
+    current_node = max_node + 1
+    for c1 in new_points:
+        
+        #Find all nodes unit distance from this node and add the edges
+        #This node is not in the walk, so no need to check for that
+        adjacent_nodes = list()
+        duplicate = False
+        for n2, c2 in walk.items():
+            diff = c2 - c1
+            dist = np.hypot(*diff)
+            
+            #Add an edge if they have unit distance
+            if np.allclose(dist, 1.0, rtol=0, atol=EPS):
+                adjacent_nodes.append(n2)
+                # graph.add_edge(current_node, n2)
+            #We have a duplicate
+            elif np.allclose(dist, 0.0, rtol=0, atol=EPS):
+                duplicate = True
+                break
+        if duplicate:
+            continue
+        
+        graph.add_node(current_node)
+        for n2 in adjacent_nodes:
+            graph.add_edge(current_node, n2)
+
+        walk.add_node(current_node, c1)
+        
+        current_node += 1
 
 # def new_indices(graph_1, graph_2, splice_pairs):
 #     """

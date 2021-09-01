@@ -51,6 +51,17 @@ class Graph:
                     continue
                 yield n1, n2
     
+    def add_node(self, node):
+        if node in self.nodes:
+            raise ValueError('Node already in self.nodes: {}'.format(node))
+        
+        self.nodes.add(node)
+        self.edge_dict[node] = set()
+    
+    def add_edge(self, n1, n2):
+        self.edge_dict[n1].add(n2)
+        self.edge_dict[n2].add(n1)
+    
     def __iter__(self):
         return iter(self.edge_dict)
 
@@ -67,6 +78,13 @@ class SubWalk:
         for node, coords in self.coords_from_nodes.items():
             coords_from_nodes[node] = coords.copy()
         return SubWalk(coords_from_nodes)
+    
+    def add_node(self, node, coords):
+        if node in self.nodes:
+            raise ValueError('Node already in self.nodes: {}'.format(node))
+        
+        self.nodes.add(node)
+        self.coords_from_nodes[node] = coords
     
     def items(self):
         return self.coords_from_nodes.items()
@@ -756,6 +774,16 @@ def color_test():
     for node, color in coloring.items():
         print('Node {} has color {}'.format(node, color))
 
+def show_walk(nodes, walk, graph):
+    coords_list = list()
+    for node in nodes:
+        coords = walk.coords_from_nodes[node]
+        coords_list.append(coords)
+    
+    tensor = graph_shower.tensor_from_list(coords_list)
+    dims = (500, 500)
+    graph_shower.make_graph_png_with_lines(tensor, graph.edges(), dims=dims)
+
 def file_test():
     # edges = ((0, 1),
     #          (0, 2),
@@ -802,3 +830,23 @@ def file_test():
     f_tensor = graph_shower.tensor_from_list(f_coords_list)
     dims = (500, 500)
     graph_shower.make_graph_png_with_lines(f_tensor, f_edges, dims=dims)
+
+def node_adder_test():
+    #The first test is to expand a line
+    edges = [(0, 1)]
+    n = 2
+    nodes = range(n)
+    
+    graph = Graph(nodes, edges)
+    walk = build_walk(graph)
+    
+    show_walk(nodes, walk, graph)
+    
+    #Now we add the new nodes
+    #We should end up with a diamond the first time
+    for _ in range(10):
+        big_graph_finder.add_new_nodes(walk, graph)
+        
+        nodes = sorted(list(walk))
+        
+        show_walk(nodes, walk, graph)
