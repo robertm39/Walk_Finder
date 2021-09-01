@@ -5,8 +5,6 @@ Created on Sun Aug 29 13:00:32 2021
 @author: rober
 """
 
-import numpy as np
-
 import matplotlib.pyplot as plt
 
 import torch
@@ -14,8 +12,8 @@ import torch.optim as optim
 from torch.nn import Parameter as Parameter
 
 import graph_shower
-import eigen_walk_finder
 import walk_builder
+import point_store
 
 def get_loss(edges, nodes):
     """
@@ -141,7 +139,9 @@ def main():
     # walk_builder.walk_builder_test()
     # walk_builder.color_test()
     # walk_builder.file_test()
-    walk_builder.node_adder_test()
+    # walk_builder.node_adder_test()
+    # point_store.key_test()
+    point_store.ring_test()
 
 if __name__ == '__main__':
     main()

@@ -70,11 +70,41 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
     return cells
     
 def get_key(num, num_decimals=NUM_DECIMALS):
-    s = str(num)
+    if np.isclose(num, 0, rtol=0, atol=EPS):
+        num = 0.0
     
+    num_s = str(num)
+    decimal_index = num_s.index('.')
+    needed_len = decimal_index+num_decimals + 1
+    len_shortfall = needed_len - len(num_s)
+    if len_shortfall > 0:
+        num_s = num_s + '0' * len_shortfall
+    
+    key = num_s[:decimal_index+num_decimals+1]
+    
+    #The number of decimals is fixed, so the decimal place is unnecessary
+    key = key.replace('.', '')
+    
+    #Now the key looks like an integer, so we'll make it one
+    #to make doing math with them easier
+    key = int(key)
+    
+    return key
 
 class PointStore:
     """
     A class to efficiently store and retrieve points in certain regions.
     """
-    
+    pass
+
+def key_test():
+    print(get_key(0.0001))
+    print(get_key(0.01))
+    print(get_key(-0.01))
+    print(get_key(0.15))
+    print(get_key(-0.15))
+
+def ring_test():
+    cell_ring = get_cell_ring()
+    for cell in cell_ring:
+        print(cell)
