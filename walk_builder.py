@@ -11,6 +11,7 @@ import numpy as np
 
 import file_reader
 import graph_shower
+import big_graph_finder
 
 SQRT_3_OVER_4 = math.sqrt(3) / 2
 
@@ -713,3 +714,38 @@ def walk_builder_test():
         graph_shower.make_graph_png_with_lines(tensor, edges, dims=dims)
     else:
         print('Failed')
+
+def color_test():
+    # #First is the simple diamond
+    # edges = ((0, 1),
+    #           (0, 2),
+    #           (1, 2),
+    #           (1, 3),
+    #           (2, 3))
+    # n = 4
+    
+    # #Next test is the graph that needs four colors
+    # edges = ((0, 1),
+    #           (0, 2),
+    #           (0, 3),
+    #           (1, 2),
+    #           (1, 4),
+    #           (2, 3),
+    #           (3, 5),
+    #           (3, 6),
+    #           (4, 5),
+    #           (4, 6),
+    #           (5, 6))
+    # n = 7
+    
+    #The next test is Heule's 529 graph with chromatic number 5.
+    edges = file_reader.edges_from_file('heule_529.txt')
+    n = 529
+    
+    nodes = range(n)
+    graph = Graph(nodes, edges)
+    
+    coloring = big_graph_finder.color_graph(graph, n_colors=4)
+    print('Coloring: {}'.format(coloring))
+    for node, color in coloring.items():
+        print('Node {} has color {}'.format(node, color))
