@@ -141,7 +141,8 @@ def main():
     # walk_builder.file_test()
     # walk_builder.node_adder_test()
     # point_store.key_test()
-    point_store.ring_test()
+    # point_store.ring_test()
+    point_store.point_store_same_test()
 
 if __name__ == '__main__':
     main()

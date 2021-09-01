@@ -18,6 +18,8 @@ NUM_DECIMALS = 2
 #I'm not actually gonna support changing the number of decimal places for now
 #Actually I will
 
+#What I thought was the center was actually the lower-left corner
+
 def get_cell_ring(num_decimals=NUM_DECIMALS):
     width = 10**(-num_decimals)
     num_cells_wide = 10 ** num_decimals #How many cells wide a 1x1 square is
@@ -26,18 +28,24 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
     min_dist = 1 - diag
     max_dist = 1 + diag
     
-    corner_disps = (walk_builder.coords(width/2, width/2),
-                    walk_builder.coords(-width/2, width/2),
-                    walk_builder.coords(-width/2, -width/2),
-                    walk_builder.coords(width/2, -width/2))
+    # corner_disps = (walk_builder.coords(width/2, width/2),
+    #                 walk_builder.coords(-width/2, width/2),
+    #                 walk_builder.coords(-width/2, -width/2),
+    #                 walk_builder.coords(width/2, -width/2))
+    
+    corner_disps = (walk_builder.coords(0, 0),
+                    walk_builder.coords(0, width),
+                    walk_builder.coords(width, width),
+                    walk_builder.coords(width, 0))
+    
     #The most the maximum and minimum distance can differ from the distance
     #between the centers is at most this much
     #(this is an overestimate, which is good anyways)
     
     cells = list()
     
-    for dx in range(-num_cells_wide, num_cells_wide+1):
-        for dy in range(-num_cells_wide, num_cells_wide+1):
+    for dx in range(-num_cells_wide-1, num_cells_wide+2):
+        for dy in range(-num_cells_wide-1, num_cells_wide+2):
             #The coordinates at the center
             cx, cy= dx * width, dy * width
             diff = walk_builder.coords(cx, cy)
@@ -68,12 +76,82 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
                 cells.append(cell)
     
     return cells
+
+#The cells that could have something in roughly the same place
+SAME_RING = (( 0,  0),
+             ( 1,  0),
+             ( 1,  1),
+             ( 0,  1),
+             (-1,  1),
+             (-1,  0),
+             (-1, -1),
+             ( 0, -1),
+             ( 1, -1))
+
+def homogenize(num_s):
+    """
+    Make it so num_s is in decimal format.
+    """
     
+    #Deal with numbers that don't have a decimal
+    if not '.' in num_s:
+        num_s = num_s + '.'
+        return num_s #There shouldn't be anything more to do
+    
+    #Deal with numbers in scientific notation
+    if 'e' in num_s:
+        e_index = num_s.index('e')
+        exponent = int(num_s[e_index+1:])
+        mantissa = num_s[:e_index]
+        
+        #Move the decimal point according to the mantissa
+        
+        #Strip the negative, add it later
+        negative = mantissa[0] == '-'
+        mantissa = mantissa.replace('-', '')
+        
+        decimal_index = mantissa.index('.')
+        new_index = decimal_index + exponent #This works nicely
+        
+        mantissa = mantissa.replace('.', '')
+        
+        #The decimal point will be to the left of everything
+        if new_index <= 0:
+            pad_zeros = abs(new_index)
+            mantissa = '0.' + '0'*pad_zeros + mantissa
+        #The decimal point will be to the right of everything
+        elif new_index >= len(mantissa):
+            pad_zeros = new_index - len(mantissa)
+            mantissa = mantissa + '0'*pad_zeros + '.0'
+        #The decimal point will be in the middle
+        else:
+            mantissa = mantissa[:new_index] + '.' + mantissa[new_index:]
+        
+        if negative:
+            mantissa = '-' + mantissa
+        
+        return mantissa
+    
+    return num_s
+
+# def pad(num_s):
+#     decimal_index = num_s.index('.')
+#     needed_len = decimal_index+num_decimals + 1
+#     len_shortfall = needed_len - len(num_s)
+#     if len_shortfall > 0:
+#         num_s = num_s + '0' * len_shortfall
+    
+#     return num_s
+
 def get_key(num, num_decimals=NUM_DECIMALS):
     if np.isclose(num, 0, rtol=0, atol=EPS):
         num = 0.0
     
     num_s = str(num)
+    num_s = homogenize(num_s)
+    # if not '.' in num_s:
+    #     num_s = num_s + '.'
+    
     decimal_index = num_s.index('.')
     needed_len = decimal_index+num_decimals + 1
     len_shortfall = needed_len - len(num_s)
@@ -85,9 +163,17 @@ def get_key(num, num_decimals=NUM_DECIMALS):
     #The number of decimals is fixed, so the decimal place is unnecessary
     key = key.replace('.', '')
     
+    #To make this work, we need to make the negative keys one lower
+    if key[0] == '-':
+        subkey = key[1:]
+        subkey = int(subkey) + 1
+        key = -subkey
+    else:
+        key = int(key)
+    
     #Now the key looks like an integer, so we'll make it one
     #to make doing math with them easier
-    key = int(key)
+    # key = int(key)
     
     return key
 
@@ -95,10 +181,69 @@ class PointStore:
     """
     A class to efficiently store and retrieve points in certain regions.
     """
-    pass
+    def __init__(self, num_decimals=NUM_DECIMALS):
+        #Store that values that are approximately unit distance away
+        self.one_dist_from_cells = dict()
+        
+        #Store the values that are in roughly the same place
+        self.same_from_cells = dict()
+        self.num_decimals = num_decimals
+        
+        self.unit_ring = get_cell_ring(num_decimals=num_decimals)
+    
+    def __setitem__(self, coords, value):
+        """
+        Put the given value at the given coords.
+        """
+        x, y = coords[0], coords[1]
+        x_key = get_key(x, num_decimals=self.num_decimals)
+        y_key = get_key(y, num_decimals=self.num_decimals)
+        
+        #Put the value in the appropriate unit-ring buckets.
+        for dx, dy in self.unit_ring:
+            total_x = x_key + dx
+            total_y = y_key + dy
+            
+            key = (total_x, total_y)
+            if not key in self.one_dist_from_cells:
+                self.one_dist_from_cells[key] = set()
+            
+            #Store both the coords and the value in case they're needed
+            val = (coords, value)
+            self.one_dist_from_cells[key].add(val)
+        
+        #Put the value in the appropriate same-place buckets.
+        for dx, dy in SAME_RING:
+            total_x = x_key + dx
+            total_y = y_key + dy
+            
+            key = (total_x, total_y)
+            if not key in self.same_from_cells:
+                self.same_from_cells[key] = set()
+            
+            #Store both the coords and the value in case they're needed
+            val = (coords, value)
+            self.same_from_cells[key].add(val)
+    
+    def get_entries_one_away(self, coords):
+        x, y = coords[0], coords[1]
+        x_key = get_key(x, num_decimals=self.num_decimals)
+        y_key = get_key(y, num_decimals=self.num_decimals)
+        key = (x_key, y_key)
+        
+        return self.one_dist_from_cells.get(key, set())
+    
+    def get_entries_in_same_place(self, coords):
+        x, y = coords[0], coords[1]
+        x_key = get_key(x, num_decimals=self.num_decimals)
+        y_key = get_key(y, num_decimals=self.num_decimals)
+        key = (x_key, y_key)
+        
+        return self.same_from_cells.get(key, set())
 
 def key_test():
     print(get_key(0.0001))
+    print(get_key(-0.0001))
     print(get_key(0.01))
     print(get_key(-0.01))
     print(get_key(0.15))
@@ -108,3 +253,28 @@ def ring_test():
     cell_ring = get_cell_ring()
     for cell in cell_ring:
         print(cell)
+
+def point_store_test():
+    point_store = PointStore()
+    point_store[0, 0] = 'The origin'
+    # print(point_store.get_entries_one_away([1, 0]))
+    
+    print('Testing point store')
+    succeeded = True
+    for degrees in range(0, 360000):
+        theta = degrees * np.pi / 180000
+        x = np.cos(theta)
+        y = np.sin(theta)
+        
+        entries = point_store.get_entries_one_away([x, y])
+        if len(entries) != 1:
+            print('Failed at x={}, y={}'.format(x, y))
+            succeeded=False
+    if succeeded:
+        print('Succeeded')
+
+def point_store_same_test():
+    point_store = PointStore()
+    point_store[0, 0] = 'The origin'
+    
+    print(point_store.get_entries_in_same_place([-0.0001, 0.0001]))
