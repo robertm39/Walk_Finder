@@ -12,9 +12,10 @@ import numpy as np
 import file_reader
 import graph_shower
 import big_graph_finder
+from constants import EPS
 
 SQRT_3_OVER_4 = math.sqrt(3) / 2
-EPS = 1e-10
+# EPS = 1e-10
 
 #Maybe change to long double for more precise equality tests
 #(since this is very important) 
@@ -98,6 +99,9 @@ class SubWalk:
     
     def __contains__(self, node):
         return node in self.nodes
+    
+    def __len__(self):
+        return len(self.nodes)
     
 def get_triangle_subwalk(n1, n2, n3):
     """
@@ -833,20 +837,45 @@ def file_test():
 
 def node_adder_test():
     #The first test is to expand a line
-    edges = [(0, 1)]
-    n = 2
+    # edges = [(0, 1)]
+    # n = 2
+    
+    #The second test is the Moser Spindle
+    edges = ((0, 1),
+              (0, 2),
+              (0, 3),
+              (1, 2),
+              (1, 4),
+              (2, 3),
+              (3, 5),
+              (3, 6),
+              (4, 5),
+              (4, 6),
+              (5, 6))
+    n = 7
+    
     nodes = range(n)
     
     graph = Graph(nodes, edges)
     walk = build_walk(graph)
     
-    show_walk(nodes, walk, graph)
+    # show_walk(nodes, walk, graph)
+    
+    # filename_base = 'spindle_iter_{}.txt'
+    
+    # file_reader.write_to_file(walk, graph, filename_base.format(0))
     
     #Now we add the new nodes
     #We should end up with a diamond the first time
-    for _ in range(10):
+    for i in range(1, 3):
         big_graph_finder.add_new_nodes(walk, graph)
+        # file_reader.write_to_file(walk, graph, filename_base.format(i))
         
         nodes = sorted(list(walk))
         
-        show_walk(nodes, walk, graph)
+        # show_walk(nodes, walk, graph)
+    
+    #Now try to color it
+    # print('Coloring:')
+    # result = big_graph_finder.color_graph(graph=graph, n_colors=4)
+    # print(result)

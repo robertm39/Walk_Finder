@@ -11,7 +11,9 @@ import walk_builder
 
 import file_reader
 
-EPS = 1e-10
+from constants import EPS
+
+# EPS = 1e-10
 
 class ColoringState:
     def __init__(self,
@@ -228,6 +230,7 @@ def add_new_nodes(walk, graph, eps=EPS):
     #Put the nodes into the walk and 
     max_node = max(walk)
     current_node = max_node + 1
+    
     for c1 in new_points:
         
         #Find all nodes unit distance from this node and add the edges
@@ -252,10 +255,20 @@ def add_new_nodes(walk, graph, eps=EPS):
         graph.add_node(current_node)
         for n2 in adjacent_nodes:
             graph.add_edge(current_node, n2)
-
+    
         walk.add_node(current_node, c1)
         
         current_node += 1
+    
+    new_edges = 0
+    for node in walk:
+        if node <= max_node:
+            continue #Only check new nodes
+        new_edges += len(graph.adjacent(node))
+
+    num_new_nodes = len(walk) - max_node - 1
+    s = '{} new nodes, {} new edges, {} average edges per new node'
+    print(s.format(num_new_nodes, new_edges, new_edges/num_new_nodes))
 
 # def new_indices(graph_1, graph_2, splice_pairs):
 #     """
