@@ -139,7 +139,8 @@ def main():
     # eigen_walk_finder.eigen_test()
     # eigen_walk_finder.dim_reduce_eigen_test()
     # walk_builder.walk_builder_test()
-    walk_builder.color_test()
+    # walk_builder.color_test()
+    walk_builder.file_test()
 
 if __name__ == '__main__':
     main()

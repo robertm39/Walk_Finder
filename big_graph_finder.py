@@ -88,6 +88,30 @@ class ColoringState:
         self.nodes_from_numbers[num-1].add(node)
         self.possible_colors_from_nodes[node].discard(color)
 
+def do_initial_coloring(graph, c_state):
+    """
+    Color in a mutually connected triangle of nodes. No loss of generality.
+    """
+    checked = set()
+    for n1 in graph:
+        checked.add(n1)
+        for n2 in graph.adjacent(n1):
+            for n3 in graph.adjacent(n2):
+                if n3 in checked:
+                    continue
+                if graph.has_edge(n3, n1):
+                    #We've found a triangle
+                    c1 = next(iter(c_state.possible_colors_from_nodes[n1]))
+                    c_state.set_color(n1, c1)
+                    
+                    c2 = next(iter(c_state.possible_colors_from_nodes[n2]))
+                    c_state.set_color(n2, c2)
+                    
+                    c3 = next(iter(c_state.possible_colors_from_nodes[n3]))
+                    c_state.set_color(n3, c3)
+                    
+                    return
+
 #Want to find a graph that can't be five-colored
 def color_graph(graph=None, n_colors=None, c_state=None):
     
@@ -97,6 +121,9 @@ def color_graph(graph=None, n_colors=None, c_state=None):
         
         # print('n_colors: {}'.format(n_colors))
         c_state = ColoringState(graph, n_colors=n_colors)
+        
+        #This will save a lot of time when a coloring is impossible
+        do_initial_coloring(graph, c_state)
     
     #Everything is initialized now
     while True: #This will end
@@ -155,9 +182,39 @@ def get_heule_subwalk(offset=0):
     subwalk = walk_builder.SubWalk(coords_from_nodes)
     return subwalk, edges
 
-def splice_subwalks(sw1, sw2, cn1, cn2, ln1, ln2, edges):
+# def new_indices(graph_1, graph_2, splice_pairs):
+#     """
+#     Return the new indices 
+#     """
+#     splice_pairs_less = 0
+#     removed_numbers = [n2 for n1, n2 in splice_pairs]
+    
+#     subs = {n2:n1 for n1, n2 in splice_pairs}
+#     result = dict()
+    
+#     removed_numbers_iter = iter(nodes)
+#     nums_iter = iter(range())
+#     current_number = 0
+    
+#     try:
+#         current_next_to_remove = next(removed_numbers_iter)
+        
+#     except StopIteration:
+#         pass
+    
+#     return result
+
+def splice_graph(sw1, sw2, cn1_1, cn1_2, cn2_1, cn2_2, edges):
     """
-    Return a subwalk gotten by identifying cn1 and cn2 and linking ln1 and ln2.
+    Return a subwalk gotten by identifying cn1_1 with cn1_2
+    and cn2_1 with cn2_2, along with the edges.
+    """
+    pass
+
+def spindle_subwalk(sw1, sw2, cn1, cn2, ln1, ln2, edges):
+    """
+    Return a subwalk gotten by identifying cn1 and cn2 and linking ln1 and ln2,
+    along with the new edges.
     The subwalks must have no nodes in common.
     """
     pass

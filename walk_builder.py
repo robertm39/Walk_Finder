@@ -14,6 +14,7 @@ import graph_shower
 import big_graph_finder
 
 SQRT_3_OVER_4 = math.sqrt(3) / 2
+EPS = 1e-10
 
 #Maybe change to long double for more precise equality tests
 #(since this is very important) 
@@ -41,6 +42,15 @@ class Graph:
     def adjacent(self, n1):
         return self.edge_dict[n1]
     
+    def edges(self):
+        checked = set()
+        for n1 in self:
+            checked.add(n1)
+            for n2 in self.adjacent(n1):
+                if n2 in checked:
+                    continue
+                yield n1, n2
+    
     def __iter__(self):
         return iter(self.edge_dict)
 
@@ -58,6 +68,8 @@ class SubWalk:
             coords_from_nodes[node] = coords.copy()
         return SubWalk(coords_from_nodes)
     
+    def items(self):
+        return self.coords_from_nodes.items()
     #Can be used as keys, but equality is exact object equality
     #Do not ever have equivalent groups in the same map
     def __hash__(self):
@@ -88,24 +100,6 @@ def get_edge_subwalk(n1, n2):
     coords_from_nodes[n1] = coords(0, 0)
     coords_from_nodes[n2] = coords(1, 0)
     return SubWalk(coords_from_nodes)
-
-# class SetKey:
-#     def __init__(self, s):
-#         self.s = s
-        
-#         self.hash = 17
-#         for h in sorted([hash(i) for i in self.s]):
-#             self.hash += h
-#             self.hash *= 31
-    
-#     def __eq__(self, other):
-#         return self.s == other.s
-    
-#     def __neq__(self, other):
-        
-    
-#     def __hash__(self):
-#         return self,hash
 
 class SubWalks:
     """
@@ -176,18 +170,18 @@ class SubWalks:
             copy.add_subwalk(subwalk.copy())
         return copy
 
-#I think I'll just use actual recursion
-#if it gets too deep I'll have to use this
-#but I think I can manage the depth by focusing on forced mergings
-class CheckPoint:
-    """
-    A state to go back to if embedding fails.
-    """
-    def __init__(self, subwalks, sw1, sw2, mergings):
-        self.subwalks = subwalks.copy()
-        self.sw1 = sw1.copy()
-        self.sw2 = sw2.copy()
-        self.mergings = mergings
+# #I think I'll just use actual recursion
+# #if it gets too deep I'll have to use this
+# #but I think I can manage the depth by focusing on forced mergings
+# class CheckPoint:
+#     """
+#     A state to go back to if embedding fails.
+#     """
+#     def __init__(self, subwalks, sw1, sw2, mergings):
+#         self.subwalks = subwalks.copy()
+#         self.sw1 = sw1.copy()
+#         self.sw2 = sw2.copy()
+#         self.mergings = mergings
 
 def add_triangle_subwalks(graph, subwalks):
     """
@@ -267,6 +261,17 @@ def rotate_subwalk(theta, subwalk):
         coords = rot_matrix @ coords
         subwalk.coords_from_nodes[node] = coords
 
+def align_subwalk_by_two_nodes(sw1, n1, n2):
+    """
+    Translate and rotate the given subwalk so that n1 is at the origin
+    and n2 is on the positive x-axis.
+    """
+    c1 = sw1.coords_from_nodes[n1]
+    translate_subwalk(-c1, sw1)
+    
+    angle = find_angle(n1, n2, sw1)
+    rotate_subwalk(-angle, sw1)
+
 def reflect_subwalk(subwalk):
     """
     Reflect the given subwalk over the x-axis.
@@ -296,7 +301,7 @@ def union_subwalk(sw1, sw2):
 
 #As for epsilon, it seems like errors of the scale occur 1e-16
 #so stay a few orders of magnitude above that
-def check_overlaps(sw1, sw2, eps=1e-10):
+def check_overlaps(sw1, sw2, eps=EPS):
     """
     Return whether there are different nodes in the same place
     in the two given subwalks, up to the given epsilon.
@@ -318,7 +323,7 @@ def check_overlaps(sw1, sw2, eps=1e-10):
     
     return True
 
-def check_connected_nodes(sw1, sw2, graph, eps=1e-10):
+def check_connected_nodes(sw1, sw2, graph, eps=EPS):
     """
     Check whether nodes connected between the subwalks are at unit distance.
     To be used on aligned walks, otherwise meaningless.
@@ -335,7 +340,7 @@ def check_connected_nodes(sw1, sw2, graph, eps=1e-10):
                     return False
     return True
 
-def check_identical(sw1, sw2, eps=1e-10):
+def check_identical(sw1, sw2, eps=EPS):
     """
     Make sure that the same nodes have the same coords in both subwalks.
     To be used on aligned walks, otherwise meaningless.
@@ -347,7 +352,7 @@ def check_identical(sw1, sw2, eps=1e-10):
             return False
     return True
 
-def check_validity(sw1, sw2, graph, eps=1e-10):
+def check_validity(sw1, sw2, graph, eps=EPS):
     """
     Check whether the two subwalks could be validly merged, that is,
     whether they're free of overlaps and all nodes connected between the two
@@ -745,7 +750,55 @@ def color_test():
     nodes = range(n)
     graph = Graph(nodes, edges)
     
+    #Show that it can't be colored with four colors.
     coloring = big_graph_finder.color_graph(graph, n_colors=4)
     print('Coloring: {}'.format(coloring))
     for node, color in coloring.items():
         print('Node {} has color {}'.format(node, color))
+
+def file_test():
+    # edges = ((0, 1),
+    #          (0, 2),
+    #          (0, 3),
+    #          (1, 2),
+    #          (1, 4),
+    #          (2, 3),
+    #          (3, 5),
+    #          (3, 6),
+    #          (4, 5),
+    #          (4, 6),
+    #          (5, 6))
+    # n = 7
+    
+    # nodes = list(range(n))
+    # graph = Graph(nodes, edges)
+    # walk = build_walk(graph)
+    
+    walk, edges = big_graph_finder.get_heule_subwalk()
+    n = 529
+    nodes = range(n)
+    graph = Graph(nodes, edges)
+    
+    coords_list = list()
+    for node in nodes:
+        coords = walk.coords_from_nodes[node]
+        coords_list.append(coords)
+    
+    tensor = graph_shower.tensor_from_list(coords_list)
+    dims = (500, 500)
+    graph_shower.make_graph_png_with_lines(tensor, edges, dims=dims)
+    
+    filename = 'test_file.txt'
+    file_reader.write_to_file(walk, graph, filename)
+    
+    f_walk, f_graph = file_reader.read_from_file(filename)
+    
+    f_coords_list = list()
+    for node in nodes:
+        coords = f_walk.coords_from_nodes[node]
+        f_coords_list.append(coords)
+    
+    f_edges = list(f_graph.edges())
+    f_tensor = graph_shower.tensor_from_list(f_coords_list)
+    dims = (500, 500)
+    graph_shower.make_graph_png_with_lines(f_tensor, f_edges, dims=dims)
