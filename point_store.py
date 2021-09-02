@@ -34,7 +34,10 @@ SAME_RING = (( 0,  0),
              ( 0, -1),
              ( 1, -1))
 
-def get_cell_ring(num_decimals=NUM_DECIMALS):
+def get_cell_ring(num_decimals=NUM_DECIMALS, _cache=dict()):
+    if num_decimals in _cache:
+        return _cache[num_decimals]
+    
     width = 10**(-num_decimals)
     num_cells_wide = 10 ** num_decimals #How many cells wide a 1x1 square is
     
@@ -112,7 +115,11 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
                 #     cell = (dx+dx2, dy+dy2)
                 #     cells.add(cell)
     
-    return list(cells)
+    result = list(cells)
+    
+    _cache[num_decimals] = result
+    
+    return result
 
 def homogenize(num_s):
     """
@@ -298,11 +305,14 @@ def point_store_test():
     #         print('Failed at x={}, y={}'.format(x, y))
     #         succeeded=False
     
-    #Test a bunch of random points
-    for _ in range(100000):
+    #Test a million random pairs of points
+    for i in range(1, 1000000 + 1):
         point_store = PointStore()
-        x = random.random()
-        y = random.random()
+        x = random.random() + random.randint(-5, 5)
+        y = random.random() + random.randint(-5, 5)
+        
+        x *= 10 ** (random.randint(-10, 3))
+        y *= 10 ** (random.randint(-10, 3))
         
         theta = random.random() * np.pi * 2
         
@@ -320,6 +330,9 @@ def point_store_test():
             point_store = PointStore()
             point_store[x, y] = 'Thing'
             entries = point_store.get_entries_one_away((x2, y2))
+        
+        if i % 10000 == 0:
+            print('Tested {} pairs of points'.format(i))
         
     if succeeded:
         print('Succeeded')

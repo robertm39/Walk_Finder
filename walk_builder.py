@@ -59,9 +59,31 @@ class Graph:
         self.nodes.add(node)
         self.edge_dict[node] = set()
     
+    def remove_node(self, node):
+        self.nodes.remove(node)
+        
+        for adj in self.adjacent(node):
+            self.edge_dict[adj].remove(node)
+        del self.edge_dict[node]
+    
     def add_edge(self, n1, n2):
         self.edge_dict[n1].add(n2)
         self.edge_dict[n2].add(n1)
+    
+    def copy(self):
+        c_graph = Graph(set(), set())
+        for node in self:
+            c_graph.add_node(node)
+            
+        checked = set()
+        for n1, n2s in self.edge_dict.items():
+            checked.add(n1)
+            for n2 in n2s:
+                if n2 in checked:
+                    continue
+                c_graph.add_edge(n1, n2s)
+        
+        return c_graph
     
     def __iter__(self):
         return iter(self.edge_dict)

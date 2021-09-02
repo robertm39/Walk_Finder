@@ -169,6 +169,32 @@ def color_graph(graph=None, n_colors=None, c_state=None):
             #This loop is only supposed to do one step at a time
             break
 
+def reduce_graph(graph, n_colors):
+    """
+    Iteratively remove all nodes with fewer edges than n_colors.
+    This does not change whether the graph can be colored with n colors.
+    """
+    changed = True
+    while changed:
+        changed = False
+        nodes = set(graph)
+        for node in nodes:
+            num_edges = len(graph.adjacent(node))
+            if num_edges < n_colors:
+                graph.remove(node)
+                changed = True
+
+def verify_colorable(graph, n_colors):
+    #We're gonna considerably change the graph, so make a copy
+    graph = graph.copy()
+    reduce_graph(graph, n_colors)
+    
+    #The graph turned out to be empty, so it can be colored
+    if len(graph) == 0:
+        return True
+    
+    return bool(color_graph(graph=graph, n_colors=n_colors))
+
 def get_heule_subwalk(offset=0):
     """
     Return a subwalk containing the heule graph, and the edges.
