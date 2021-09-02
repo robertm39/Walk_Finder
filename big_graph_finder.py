@@ -226,9 +226,9 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
         num_decimals = 2
         ps1 = point_store.PointStore(num_decimals=num_decimals)
         ps2 = point_store.PointStore(num_decimals=0,
-                                     unit=False,
-                                     same=False,
-                                     two=True)
+                                      unit=False,
+                                      same=False,
+                                      two=True)
         
         # print('Initializing Point Store')
         #Initialize the point store
@@ -270,39 +270,12 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
                 q_len = np.sqrt(1 - (dist*dist / 4))
                 qv = qv * q_len
                 
-        #         #Now we have the q vector
-        #         p1 = midpoint + qv
-        #         p2 = midpoint - qv
-        #         new_points.append(p1)
-        #         new_points.append(p2)
-        # for n2, c2 in walk.items():
-        #     if n2 in checked:
-        #         continue
-        #     diff = c2 - c1
-        #     dist = np.hypot(*diff)
-        #     #The two nodes are distance two apart
-        #     #So the point at unit distance from both is their midpoint
-        #     # if np.allclose(dist, 2.0, rtol=0, atol=EPS):
-        #     if np.isclose(dist, 2.0, rtol=0, atol=EPS):
-        #         half_diff = diff / 2.0
-        #         midpoint = c1 + half_diff
-        #         new_points.append(midpoint)
-        #     elif dist > 2.0: #They're too far apart
-        #         pass
-        #     else: #Their distance is less than two
-        #         half_diff = diff / 2.0
-        #         midpoint = c1 + half_diff
-        #         dx, dy = diff[0], diff[1]
-        #         qv = walk_builder.coords(-dy, dx)
-        #         qv = qv / dist #The length of q is the length of diff, ie dist.
-        #         q_len = np.sqrt(1 - (dist*dist / 4))
-        #         qv = qv * q_len
-                
-        #         #Now we have the q vector
-        #         p1 = midpoint + qv
-        #         p2 = midpoint - qv
-        #         new_points.append(p1)
-        #         new_points.append(p2)
+                #Now we have the q vector
+                p1 = midpoint + qv
+                p2 = midpoint - qv
+                new_points.append(p1)
+                new_points.append(p2)
+    
     
     # for n1, c1 in walk.items():
     #     checked.add(n1)

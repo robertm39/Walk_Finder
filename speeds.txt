@@ -15,3 +15,6 @@ too slow
 
 2 decimals, isclose, keep PointStore between calls:
 2.05 minutes
+
+2 decimals, isclose, keep PointStore  between calls, use PointStore (zero decimals) to store nodes within two:
+2.34 minutes
