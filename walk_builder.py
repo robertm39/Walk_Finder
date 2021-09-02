@@ -28,7 +28,12 @@ def coords(x, y):
     return np.array([x, y], dtype=DTYPE)
 
 class Graph:
-    def __init__(self, nodes, edges):
+    def __init__(self, nodes=None, edges=None):
+        if nodes is None:
+            nodes = set()
+        if edges is None:
+            edges = list()
+        
         self.edge_dict = dict()
         self.nodes = set(nodes)
         for node in nodes:
@@ -135,7 +140,25 @@ class SubWalk:
     
     def __len__(self):
         return len(self.nodes)
+
+def with_renamed_nodes(walk, graph):
+    n_graph = Graph()
+    n_walk = SubWalk(dict())
+            
+    old_to_new = dict()
+    for i, n1 in enumerate(graph):
+        old_to_new[n1] = i
+        
+        coords = walk.coords_from_nodes[n1]
+        n_walk.add_node(i, coords)
+        
+        n_graph.add_node(i)
+        for n2 in graph.adjacent(n1):
+            if n2 in old_to_new:
+                n_graph.add_edge(i, old_to_new[n2])
     
+    return n_walk, n_graph
+
 def get_triangle_subwalk(n1, n2, n3):
     """
     Return a subwalk containing the three given nodes in a triangle.
@@ -907,11 +930,9 @@ def node_adder_test():
     ps1 = None
     ps2 = None
     
-    #Let's try to go even bigger
-    #Maybe then the graph will be better
-    #let's see how far it can go with the optimization
-    print('Going for broke')
-    for i in range(1, 11):
+    #It seems like I don't have enough memory to get to the fourth
+    #So maybe I should take trimmed versions and build from those
+    for i in range(1, 4):
         ps1, ps2 = big_graph_finder.add_new_nodes(walk,
                                                   graph,
                                                   ps1=ps1,
@@ -949,3 +970,17 @@ def color_graph_test():
         print('Colorable')
     else:
         print('Uncolorable')
+
+def save_trimmed_spindles():
+    r_filename = 'spindle_iter_3.txt'
+    walk, graph = file_reader.read_from_file(r_filename)
+    
+    t_filename = 'spindle_3b_{}r.txt'
+    #Get the trimmed versions of the graphs and the walks
+    for i in range(5, 9):
+        filename = t_filename.format(i)
+        print('Doing ' + filename)
+        big_graph_finder.reduce_graph(graph, i)
+        walk, graph = with_renamed_nodes(walk, graph)
+        file_reader.write_to_file(walk, graph, filename)
+        print(filename + 'Done')
