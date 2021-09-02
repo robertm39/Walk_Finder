@@ -900,28 +900,32 @@ def node_adder_test():
     # edges = [(0, 1)]
     # n = 2
     
-    #The second test is the Moser Spindle
-    edges = ((0, 1),
-              (0, 2),
-              (0, 3),
-              (1, 2),
-              (1, 4),
-              (2, 3),
-              (3, 5),
-              (3, 6),
-              (4, 5),
-              (4, 6),
-              (5, 6))
-    n = 7
+    # #The second test is the Moser Spindle
+    # edges = ((0, 1),
+    #           (0, 2),
+    #           (0, 3),
+    #           (1, 2),
+    #           (1, 4),
+    #           (2, 3),
+    #           (3, 5),
+    #           (3, 6),
+    #           (4, 5),
+    #           (4, 6),
+    #           (5, 6))
+    # n = 7
     
-    nodes = range(n)
+    # nodes = range(n)
     
-    graph = Graph(nodes, edges)
-    walk = build_walk(graph)
+    # graph = Graph(nodes, edges)
+    # walk = build_walk(graph)
+    
+    #Now it isn't a test anymore
+    #load the spindle, built three times, reduced up to 8
+    walk, graph = file_reader.read_from_file('spindle_3b_8r.txt')
     
     # show_walk(nodes, walk, graph)
     
-    filename_base = 'spindle_iter_{}.txt'
+    filename_base = 'spindle_3b_8r_{}b.txt'
     
     file_reader.write_to_file(walk, graph, filename_base.format(0))
     
@@ -930,16 +934,19 @@ def node_adder_test():
     ps1 = None
     ps2 = None
     
-    #It seems like I don't have enough memory to get to the fourth
-    #So maybe I should take trimmed versions and build from those
-    for i in range(1, 4):
+    #Maybe I can build this one twice
+    #Even once should be pretty good
+    for i in range(1, 3):
+        filename = filename_base.format(i)
+        print('Starting {}'.format(filename))
         ps1, ps2 = big_graph_finder.add_new_nodes(walk,
                                                   graph,
                                                   ps1=ps1,
                                                   ps2=ps2)
         file_reader.write_to_file(walk, graph, filename_base.format(i))
+        print('Finished {}'.format(filename))
         
-        nodes = sorted(list(walk))
+        # nodes = sorted(list(walk))
         
         # show_walk(nodes, walk, graph)
     print('Finished')
@@ -983,4 +990,4 @@ def save_trimmed_spindles():
         big_graph_finder.reduce_graph(graph, i)
         walk, graph = with_renamed_nodes(walk, graph)
         file_reader.write_to_file(walk, graph, filename)
-        print(filename + 'Done')
+        print(filename + ' Done\n')
