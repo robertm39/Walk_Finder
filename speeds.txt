@@ -1,0 +1,17 @@
+Speed:
+
+2 decimals, allclose:
+3.87 minutes (???)
+3.01 minutes
+
+2 decimals, isclose:
+2.99 minutes
+
+3 decimals, isclose:
+too slow
+
+1 decimal, isclose:
+too slow
+
+2 decimals, isclose, keep PointStore between calls:
+2.05 minutes

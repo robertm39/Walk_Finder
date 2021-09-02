@@ -87,7 +87,8 @@ def get_cell_ring(num_decimals=NUM_DECIMALS, _cache=dict()):
                     #d2 is the disp from the origin to its corner
                     corner_to_corner = diff + d1 - d2
                     overall_dist = np.hypot(*corner_to_corner)
-                    if np.allclose(overall_dist, 1, rtol=0, atol=EPS):
+                    
+                    if np.isclose(overall_dist, 1, rtol=0, atol=EPS):
                         ge_one=True
                         le_one=True
                         break

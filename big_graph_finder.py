@@ -215,19 +215,22 @@ def get_heule_subwalk(offset=0):
     return subwalk, edges
 
 #Improve this to use PointStore
-def add_new_nodes(walk, graph, eps=EPS):
+def add_new_nodes(walk, graph, ps=None, eps=EPS):
     """
     Add all points at unit distance from at least two points in the graph.
     Add all edges, even incidental ones.
     """
     #I can tweak the number of decimals for optimization
-    ps = point_store.PointStore(num_decimals=2)
     
-    # print('Initializing Point Store')
-    #Initialize the point store
-    for node, coords in walk.items():
-        ps[coords] = node
-    # print('Point Store initialized')
+    if ps is None:
+        num_decimals = 2
+        ps = point_store.PointStore(num_decimals=num_decimals)
+        
+        # print('Initializing Point Store')
+        #Initialize the point store
+        for node, coords in walk.items():
+            ps[coords] = node
+        # print('Point Store initialized')
     
     new_points = list()
     
@@ -243,7 +246,8 @@ def add_new_nodes(walk, graph, eps=EPS):
             dist = np.hypot(*diff)
             #The two nodes are distance two apart
             #So the point at unit distance from both is their midpoint
-            if np.allclose(dist, 2.0, rtol=0, atol=EPS):
+            # if np.allclose(dist, 2.0, rtol=0, atol=EPS):
+            if np.isclose(dist, 2.0, rtol=0, atol=EPS):
                 half_diff = diff / 2.0
                 midpoint = c1 + half_diff
                 new_points.append(midpoint)
@@ -283,7 +287,8 @@ def add_new_nodes(walk, graph, eps=EPS):
                 diff = c2 - c1
                 dist = np.hypot(*diff)
                 
-                if np.allclose(dist, 0.0, rtol=0, atol=eps):
+                # if np.allclose(dist, 0.0, rtol=0, atol=eps):
+                if np.isclose(dist, 0.0, rtol=0, atol=eps):
                     duplicate = True
                     break
             
@@ -297,14 +302,14 @@ def add_new_nodes(walk, graph, eps=EPS):
                 diff = c2 - c1
                 dist = np.hypot(*diff)
                 
-                #I still need to test because the point store is only approximate
+                #I still need to test because the point store isn't exact
                 #but this way, I only check a few nodes instead of all of them
                 #Add an edge if they have unit distance
-                if np.allclose(dist, 1.0, rtol=0, atol=eps):
+                # if np.allclose(dist, 1.0, rtol=0, atol=eps):
+                if np.isclose(dist, 1.0, rtol=0, atol=eps):
                     adjacent_nodes.append(n2)
                     # graph.add_edge(current_node, n2)
         
-
         #Here's the old code, to test if they're the same
         else:
             adjacent_nodes = []
@@ -314,11 +319,13 @@ def add_new_nodes(walk, graph, eps=EPS):
                 dist = np.hypot(*diff)
                 
                 #Add an edge if they have unit distance
-                if np.allclose(dist, 1.0, rtol=0, atol=EPS):
+                # if np.allclose(dist, 1.0, rtol=0, atol=EPS):
+                if np.isclose(dist, 1.0, rtol=0, atol=EPS):
                     adjacent_nodes.append(n2)
                     # graph.add_edge(current_node, n2)
                 #We have a duplicate
-                elif np.allclose(dist, 0.0, rtol=0, atol=EPS):
+                # elif np.allclose(dist, 0.0, rtol=0, atol=EPS):
+                elif np.isclose(dist, 0.0, rtol=0, atol=EPS):
                     duplicate = True
                     break
             if duplicate:
@@ -342,6 +349,8 @@ def add_new_nodes(walk, graph, eps=EPS):
     num_new_nodes = len(walk) - max_node - 1
     s = '{} new nodes, {} new edges, {} average edges per new node'
     print(s.format(num_new_nodes, new_edges, new_edges/num_new_nodes))
+    
+    return ps
 
 # def new_indices(graph_1, graph_2, splice_pairs):
 #     """

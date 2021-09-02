@@ -890,8 +890,9 @@ def node_adder_test():
     
     #Now we add the new nodes
     #We should end up with a diamond the first time
+    ps = None
     for i in range(1, 4):
-        big_graph_finder.add_new_nodes(walk, graph)
+        ps = big_graph_finder.add_new_nodes(walk, graph, ps=ps)
         file_reader.write_to_file(walk, graph, filename_base.format(i))
         
         nodes = sorted(list(walk))
@@ -910,7 +911,8 @@ def node_adder_test():
 def color_graph_test():
     filename = 'spindle_iter_3.txt'
     walk, graph = file_reader.read_from_file(filename)
-    print('Coloring:')
-    result = big_graph_finder.color_graph(graph=graph, n_colors=4)
+    print('Verifying colorable:')
+    #Now I'm only verifying colorability, so it should be much faster
+    result = big_graph_finder.verify_colorable(graph=graph, n_colors=4)
     print(result)
     
