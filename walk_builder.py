@@ -890,9 +890,13 @@ def node_adder_test():
     
     #Now we add the new nodes
     #We should end up with a diamond the first time
-    ps = None
+    ps1 = None
+    ps2 = None
     for i in range(1, 4):
-        ps = big_graph_finder.add_new_nodes(walk, graph, ps=ps)
+        ps1, ps2 = big_graph_finder.add_new_nodes(walk,
+                                                  graph,
+                                                  ps1=ps1,
+                                                  ps2=ps2)
         file_reader.write_to_file(walk, graph, filename_base.format(i))
         
         nodes = sorted(list(walk))

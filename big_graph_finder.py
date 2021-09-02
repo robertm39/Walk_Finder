@@ -215,38 +215,46 @@ def get_heule_subwalk(offset=0):
     return subwalk, edges
 
 #Improve this to use PointStore
-def add_new_nodes(walk, graph, ps=None, eps=EPS):
+def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
     """
     Add all points at unit distance from at least two points in the graph.
     Add all edges, even incidental ones.
     """
     #I can tweak the number of decimals for optimization
     
-    if ps is None:
+    if ps1 is None:
         num_decimals = 2
-        ps = point_store.PointStore(num_decimals=num_decimals)
+        ps1 = point_store.PointStore(num_decimals=num_decimals)
+        ps2 = point_store.PointStore(num_decimals=0,
+                                     unit=False,
+                                     same=False,
+                                     two=True)
         
         # print('Initializing Point Store')
         #Initialize the point store
         for node, coords in walk.items():
-            ps[coords] = node
+            ps1[coords] = node
+            ps2[coords] = node
+            
         # print('Point Store initialized')
     
     new_points = list()
     
+    #Now use the second PointStore to only look at point that could be 
+    #within two
     checked = set()
+    
     for n1, c1 in walk.items():
         checked.add(n1)
-        for n2, c2 in walk.items():
-            # if n1 is n2:
-            #     continue
+        for c2, n2 in ps2.get_entries_within_two(c1):
             if n2 in checked:
                 continue
+            
+            #We still need to check because the PointStore is imprecise
             diff = c2 - c1
             dist = np.hypot(*diff)
             #The two nodes are distance two apart
             #So the point at unit distance from both is their midpoint
-            # if np.allclose(dist, 2.0, rtol=0, atol=EPS):
             if np.isclose(dist, 2.0, rtol=0, atol=EPS):
                 half_diff = diff / 2.0
                 midpoint = c1 + half_diff
@@ -262,11 +270,70 @@ def add_new_nodes(walk, graph, ps=None, eps=EPS):
                 q_len = np.sqrt(1 - (dist*dist / 4))
                 qv = qv * q_len
                 
-                #Now we have the q vector
-                p1 = midpoint + qv
-                p2 = midpoint - qv
-                new_points.append(p1)
-                new_points.append(p2)
+        #         #Now we have the q vector
+        #         p1 = midpoint + qv
+        #         p2 = midpoint - qv
+        #         new_points.append(p1)
+        #         new_points.append(p2)
+        # for n2, c2 in walk.items():
+        #     if n2 in checked:
+        #         continue
+        #     diff = c2 - c1
+        #     dist = np.hypot(*diff)
+        #     #The two nodes are distance two apart
+        #     #So the point at unit distance from both is their midpoint
+        #     # if np.allclose(dist, 2.0, rtol=0, atol=EPS):
+        #     if np.isclose(dist, 2.0, rtol=0, atol=EPS):
+        #         half_diff = diff / 2.0
+        #         midpoint = c1 + half_diff
+        #         new_points.append(midpoint)
+        #     elif dist > 2.0: #They're too far apart
+        #         pass
+        #     else: #Their distance is less than two
+        #         half_diff = diff / 2.0
+        #         midpoint = c1 + half_diff
+        #         dx, dy = diff[0], diff[1]
+        #         qv = walk_builder.coords(-dy, dx)
+        #         qv = qv / dist #The length of q is the length of diff, ie dist.
+        #         q_len = np.sqrt(1 - (dist*dist / 4))
+        #         qv = qv * q_len
+                
+        #         #Now we have the q vector
+        #         p1 = midpoint + qv
+        #         p2 = midpoint - qv
+        #         new_points.append(p1)
+        #         new_points.append(p2)
+    
+    # for n1, c1 in walk.items():
+    #     checked.add(n1)
+    #     for n2, c2 in walk.items():
+    #         if n2 in checked:
+    #             continue
+    #         diff = c2 - c1
+    #         dist = np.hypot(*diff)
+    #         #The two nodes are distance two apart
+    #         #So the point at unit distance from both is their midpoint
+    #         # if np.allclose(dist, 2.0, rtol=0, atol=EPS):
+    #         if np.isclose(dist, 2.0, rtol=0, atol=EPS):
+    #             half_diff = diff / 2.0
+    #             midpoint = c1 + half_diff
+    #             new_points.append(midpoint)
+    #         elif dist > 2.0: #They're too far apart
+    #             pass
+    #         else: #Their distance is less than two
+    #             half_diff = diff / 2.0
+    #             midpoint = c1 + half_diff
+    #             dx, dy = diff[0], diff[1]
+    #             qv = walk_builder.coords(-dy, dx)
+    #             qv = qv / dist #The length of q is the length of diff, ie dist.
+    #             q_len = np.sqrt(1 - (dist*dist / 4))
+    #             qv = qv * q_len
+                
+    #             #Now we have the q vector
+    #             p1 = midpoint + qv
+    #             p2 = midpoint - qv
+    #             new_points.append(p1)
+    #             new_points.append(p2)
     
     #Find the highest node, and count up from there
     #Put the nodes into the walk and 
@@ -283,7 +350,7 @@ def add_new_nodes(walk, graph, ps=None, eps=EPS):
         if using_point_store:
             #See if this node is in the same place as any others
             duplicate = False
-            for c2, n2 in ps.get_entries_in_same_place(c1):
+            for c2, n2 in ps1.get_entries_in_same_place(c1):
                 diff = c2 - c1
                 dist = np.hypot(*diff)
                 
@@ -298,7 +365,7 @@ def add_new_nodes(walk, graph, ps=None, eps=EPS):
             adjacent_nodes = list()
             #Here's where the point store comes in handy
             #First, find the nodes one away
-            for c2, n2 in ps.get_entries_one_away(c1):
+            for c2, n2 in ps1.get_entries_one_away(c1):
                 diff = c2 - c1
                 dist = np.hypot(*diff)
                 
@@ -336,7 +403,8 @@ def add_new_nodes(walk, graph, ps=None, eps=EPS):
             graph.add_edge(current_node, n2)
     
         walk.add_node(current_node, c1)
-        ps[c1] = current_node
+        ps1[c1] = current_node
+        ps2[c1] = current_node
         
         current_node += 1
     
@@ -350,7 +418,7 @@ def add_new_nodes(walk, graph, ps=None, eps=EPS):
     s = '{} new nodes, {} new edges, {} average edges per new node'
     print(s.format(num_new_nodes, new_edges, new_edges/num_new_nodes))
     
-    return ps
+    return ps1, ps2
 
 # def new_indices(graph_1, graph_2, splice_pairs):
 #     """
