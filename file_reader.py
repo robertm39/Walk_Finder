@@ -5,6 +5,8 @@ Created on Tue Aug 31 17:33:12 2021
 @author: rober
 """
 
+import os.path
+
 import numpy as np
 
 import walk_builder
@@ -24,7 +26,11 @@ def edges_from_file(filename, offset=0):
             edges.append(edge)
     return edges
 
-def write_to_file(walk, graph, filename):
+def write_to_file(walk, graph, filename, overwrite=False):
+    if os.path.exists(filename) and not overwrite:
+        # print('File already exists')
+        return
+    
     with open(filename, 'w') as file:
         file.write('NODES\n')
         for node, coords in walk.items():

@@ -875,11 +875,20 @@ def node_adder_test():
         nodes = sorted(list(walk))
         
         # show_walk(nodes, walk, graph)
+    print('Finished')
     
-    dims = (800, 800)
-    show_walk(nodes, walk, graph, dims=dims)
+    # dims = (1500, 1500)
+    # show_walk(nodes, walk, graph, dims=dims)
     
-    #Now try to color it
+    # #Now try to color it
+    # print('Coloring:')
+    # result = big_graph_finder.color_graph(graph=graph, n_colors=4)
+    # print(result)
+
+def color_graph_test():
+    filename = 'spindle_iter_3.txt'
+    walk, graph = file_reader.read_from_file(filename)
     print('Coloring:')
     result = big_graph_finder.color_graph(graph=graph, n_colors=4)
     print(result)
+    

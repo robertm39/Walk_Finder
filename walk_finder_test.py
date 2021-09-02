@@ -132,7 +132,12 @@ def iterative_test():
     # graph_shower.make_graph_png(nodes, edges)
     graph_shower.make_graph_png_with_lines(nodes, edges)
 
+import sys
+
 def main():
+    #Recursion limit of 1,000,000 should be enough
+    sys.setrecursionlimit(10000000)
+    
     # iterative_test()
     # eigen_walk_finder.eigen_test()
     # eigen_walk_finder.dim_reduce_eigen_test()
