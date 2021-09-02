@@ -115,6 +115,11 @@ class SubWalk:
         self.nodes.add(node)
         self.coords_from_nodes[node] = coords
     
+    def remove_node(self, node):
+        self.nodes.discard(node)
+        if node in self.coords_from_nodes:
+            del self.coords_from_nodes[node]
+    
     def items(self):
         return self.coords_from_nodes.items()
     #Can be used as keys, but equality is exact object equality
@@ -806,7 +811,7 @@ def color_test():
     for node, color in coloring.items():
         print('Node {} has color {}'.format(node, color))
 
-def show_walk(nodes, walk, graph, dims=None):
+def show_walk(nodes, walk, graph, dims=None, inline=False):
     coords_list = list()
     for node in nodes:
         coords = walk.coords_from_nodes[node]
@@ -815,7 +820,10 @@ def show_walk(nodes, walk, graph, dims=None):
     tensor = graph_shower.tensor_from_list(coords_list)
     if dims is None:
         dims = (500, 500)
-    graph_shower.make_graph_png_with_lines(tensor, graph.edges(), dims=dims)
+    graph_shower.make_graph_png_with_lines(tensor,
+                                           graph.edges(),
+                                           dims=dims,
+                                           inline=inline)
 
 def file_test():
     # edges = ((0, 1),
@@ -898,7 +906,12 @@ def node_adder_test():
     #We should end up with a diamond the first time
     ps1 = None
     ps2 = None
-    for i in range(1, 4):
+    
+    #Let's try to go even bigger
+    #Maybe then the graph will be better
+    #let's see how far it can go with the optimization
+    print('Going for broke')
+    for i in range(1, 11):
         ps1, ps2 = big_graph_finder.add_new_nodes(walk,
                                                   graph,
                                                   ps1=ps1,
@@ -913,19 +926,25 @@ def node_adder_test():
     # dims = (1500, 1500)
     # show_walk(nodes, walk, graph, dims=dims)
     
-    #Now try to color it
-    print('Coloring:')
-    result = big_graph_finder.color_graph(graph=graph, n_colors=7)
-    print(result)
+    # #Now try to color it
+    # print('Coloring:')
+    # result = big_graph_finder.color_graph(graph=graph, n_colors=7)
+    # print(result)
 
 def color_graph_test():
     filename = 'spindle_iter_3.txt'
     walk, graph = file_reader.read_from_file(filename)
     print('Verifying colorable:')
     #Now I'm only verifying colorability, so it should be much faster
+    #maybe it won't be five-colorable, even after reducing a bunch
+    #because these are the best nodes
     n_colors = 5
+    reduce = 7
     print('Finding coloring with {} colors'.format(n_colors))
-    result = big_graph_finder.verify_colorable(graph=graph, n_colors=n_colors)
+    result = big_graph_finder.verify_colorable(graph=graph,
+                                               n_colors=n_colors,
+                                               reduce=reduce,
+                                               walk=walk)
     if result:
         print('Colorable')
     else:

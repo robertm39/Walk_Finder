@@ -100,7 +100,7 @@ def make_graph_png(nodes, edges, dims=(500, 500)):
     image = Image.fromarray(im_arr, mode='L')
     image.show()
 
-def make_graph_png_with_lines(nodes, edges, dims=(500, 500)):
+def make_graph_png_with_lines(nodes, edges, dims=(500, 500), inline=True):
     im_points, im_arr = get_im_points(nodes, dims)
     
     image = Image.fromarray(im_arr, mode='L')
@@ -111,5 +111,8 @@ def make_graph_png_with_lines(nodes, edges, dims=(500, 500)):
         p1, p2 = im_points[i1], im_points[i2]
         drawer.line([p1, p2], fill='white', width=1)
     
-    # image.show()
-    display(image)
+    # if inline:
+    #     display(image)
+    # else:
+    #     image.show()
+    image.save('reduced_8_2.png', format='png')

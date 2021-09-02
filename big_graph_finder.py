@@ -127,6 +127,8 @@ class ColoringHypothetical:
         self.node = node
         self.color = color
 
+#Let's put some output in this so I can see how fast it goes
+
 #Want to find a graph that can't be five-colored
 #I need to change this so it doesn't use recursion
 def color_graph(graph, n_colors=5):
@@ -134,9 +136,35 @@ def color_graph(graph, n_colors=5):
     
     hypotheticals = list()
     
+    i = 0
+    
+    min_depth = 0
+    max_depth = 0
+    
     while True: #This will end
         if not c_state.uncolored: #It's all colored
             return c_state.colorings
+        
+        #Collect data to display later
+        depth = len(hypotheticals)
+        if depth > max_depth:
+            max_depth = depth
+        if depth < min_depth:
+            min_depth = depth
+    
+        #Only print some of the time
+        #so that it doesn't slow down the algorithm too much
+        i += 1
+        if i % 10000 == 0:
+            #Print out the current state
+            # depth = len(hypotheticals)
+            s_depth = min_depth // 10 #To make it fit in the console
+            uncolored = len(c_state.uncolored)
+            s = ' '*s_depth + '{:4d}-{:4d} deep, {:4d} uncolored'
+            print(s.format(min_depth, max_depth, uncolored))
+            
+            min_depth = float('inf')
+            max_depth = -float('inf')
         
         numbers_of_colors = sorted(list(set(c_state.nodes_from_numbers)))
         for num in numbers_of_colors:
@@ -270,16 +298,55 @@ def check_num_edges(graph, n_edges):
             return False
     return True
 
-def verify_colorable(graph, n_colors):
+def verify_colorable(graph, n_colors, reduce=None, walk=None):
     #We're gonna considerably change the graph, so make a copy
     graph = graph.copy()
-    reduce_graph(graph, n_colors)
+    if reduce is None:
+        reduce = n_colors
+    reduce_graph(graph, reduce)
+    
+    # if walk is not None:
+    #     to_remove = list()
+    #     for node in walk:
+    #         if not node in graph:
+    #             to_remove.append(node)
+    #     for node in to_remove:
+    #         walk.remove_node(node)
+    #     # walk = walk_builder.build_walk(graph)
+    #     #Make a very big image to look at
+    #     # dims=(100000, 100000)
+    #     dims=(10000, 10000)
+    #     nodes = sorted(list(graph))
+        
+    #     #Make a new walk and graph with neat indices
+    #     n_walk = walk_builder.SubWalk(coords_from_nodes=dict())
+    #     n_graph = walk_builder.Graph(nodes=set(), edges=list())
+        
+    #     old_to_new = dict()
+        
+    #     for i, n1 in enumerate(nodes):
+    #         old_to_new[n1] = i
+            
+    #         coords = walk.coords_from_nodes[n1]
+    #         n_walk.add_node(i, coords)
+            
+    #         n_graph.add_node(i)
+    #         for n2 in graph.adjacent(n1):
+    #             if n2 in old_to_new:
+    #                 n_graph.add_edge(i, old_to_new[n2])
+        
+    #     n_nodes = range(len(n_graph))
+        
+    #     walk_builder.show_walk(n_nodes, n_walk, n_graph, dims=dims, inline=False)
     
     #The graph turned out to be empty, so it can be colored
     if len(graph) == 0:
         return True
     
-    # print('Finding coloring')
+    # print('Not Actually Verifying')
+    
+    # return
+    print('Finding coloring')
     return bool(color_graph(graph=graph, n_colors=n_colors))
 
 def get_heule_subwalk(offset=0):
