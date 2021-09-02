@@ -1,0 +1,3 @@
+18 new nodes, 48 new edges
+188 new nodes, 822 new edges
+21199 new nodes, 67426 new edges

@@ -5,6 +5,8 @@ Created on Wed Sep  1 15:30:46 2021
 @author: rober
 """
 
+import random
+
 import numpy as np
 
 import walk_builder
@@ -21,6 +23,7 @@ NUM_DECIMALS = 2
 #What I thought was the center was actually the lower-left corner
 
 #The cells that could have something in roughly the same place
+#This works as long as epsilon is reasonably small
 SAME_RING = (( 0,  0),
              ( 1,  0),
              ( 1,  1),
@@ -36,6 +39,7 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
     num_cells_wide = 10 ** num_decimals #How many cells wide a 1x1 square is
     
     diag = width * np.sqrt(2)
+    #Try inflating the diag a bit
     min_dist = 1 - diag
     max_dist = 1 + diag
     
@@ -70,22 +74,43 @@ def get_cell_ring(num_decimals=NUM_DECIMALS):
             #Now we actually need to check the corners
             ge_one = False
             le_one = False
-            for disp in corner_disps:
-                corner = diff + disp
-                corner_dist_from_origin = np.hypot(*corner)
-                if np.allclose(corner_dist_from_origin, 1, rtol=0, atol=EPS):
-                    ge_one=True
-                    le_one=True
-                    break
-                if corner_dist_from_origin >= 1:
-                    ge_one = True
-                if corner_dist_from_origin <= 1:
-                    le_one = True
+            
+            #Before, I was just doing these with one
+            #I need to apply them to both
+            
+            for d1 in corner_disps:
+                for d2 in corner_disps:
+                    #d1 is the disp from the cell to its corner
+                    #d2 is the disp from the origin to its corner
+                    corner_to_corner = diff + d1 - d2
+                    overall_dist = np.hypot(*corner_to_corner)
+                    if np.allclose(overall_dist, 1, rtol=0, atol=EPS):
+                        ge_one=True
+                        le_one=True
+                        break
+                    if overall_dist >= 1:
+                        ge_one = True
+                    if overall_dist <= 1:
+                        le_one = True
+            
+            # for disp in corner_disps:
+            #     corner = diff + disp
+            #     corner_dist_from_origin = np.hypot(*corner)
+            #     if np.allclose(corner_dist_from_origin, 1, rtol=0, atol=EPS):
+            #         ge_one=True
+            #         le_one=True
+            #         break
+            #     if corner_dist_from_origin >= 1:
+            #         ge_one = True
+            #     if corner_dist_from_origin <= 1:
+            #         le_one = True
             
             if ge_one and le_one:
-                for dx2, dy2 in SAME_RING:
-                    cell = (dx+dx2, dy+dy2)
-                    cells.add(cell)
+                cell = (dx, dy)
+                cells.add(cell)
+                # for dx2, dy2 in SAME_RING:
+                #     cell = (dx+dx2, dy+dy2)
+                #     cells.add(cell)
     
     return list(cells)
 
@@ -145,8 +170,9 @@ def homogenize(num_s):
 #     return num_s
 
 def get_key(num, num_decimals=NUM_DECIMALS):
-    if np.isclose(num, 0, rtol=0, atol=EPS):
-        num = 0.0
+    #I don't think I should actually have this
+    # if np.isclose(num, 0, rtol=0, atol=EPS):
+    #     num = 0.0
     
     num_s = str(num)
     num_s = homogenize(num_s)
@@ -262,15 +288,39 @@ def point_store_test():
     
     print('Testing point store')
     succeeded = True
-    for degrees in range(0, 360000):
-        theta = degrees * np.pi / 180000
-        x = np.cos(theta)
-        y = np.sin(theta)
+    # for degrees in range(0, 3600000):
+    #     theta = degrees * np.pi / 1800000
+    #     x = np.cos(theta)
+    #     y = np.sin(theta)
         
-        entries = point_store.get_entries_one_away([x, y])
+    #     entries = point_store.get_entries_one_away([x, y])
+    #     if len(entries) != 1:
+    #         print('Failed at x={}, y={}'.format(x, y))
+    #         succeeded=False
+    
+    #Test a bunch of random points
+    for _ in range(100000):
+        point_store = PointStore()
+        x = random.random()
+        y = random.random()
+        
+        theta = random.random() * np.pi * 2
+        
+        x2 = x + np.cos(theta)
+        y2 = y + np.sin(theta)
+        
+        point_store[x, y] = 'Thing'
+        entries = point_store.get_entries_one_away((x2, y2))
+        
         if len(entries) != 1:
-            print('Failed at x={}, y={}'.format(x, y))
-            succeeded=False
+            print('Failed at ({}, {}), ({}, {})'.format(x, y, x2, y2))
+            succeeded = False
+            
+            #Do it again for debugging
+            point_store = PointStore()
+            point_store[x, y] = 'Thing'
+            entries = point_store.get_entries_one_away((x2, y2))
+        
     if succeeded:
         print('Succeeded')
 
