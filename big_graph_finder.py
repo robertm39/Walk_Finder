@@ -118,57 +118,112 @@ def do_initial_coloring(graph, c_state):
                     
                     return
 
+class ColoringHypothetical:
+    """
+    A hypothetical coloring of a node, along with the state before it.
+    """
+    def __init__(self, coloring_state, node, color):
+        self.coloring_state = coloring_state.copy()
+        self.node = node
+        self.color = color
+
 #Want to find a graph that can't be five-colored
 #I need to change this so it doesn't use recursion
-def color_graph(graph=None, n_colors=None, c_state=None):
+def color_graph(graph, n_colors=5):
+    c_state = ColoringState(graph, n_colors=n_colors)
     
-    if c_state is None:
-        if graph is None:
-            raise ValueError('Both arguments are none')
-        
-        # print('n_colors: {}'.format(n_colors))
-        c_state = ColoringState(graph, n_colors=n_colors)
-        
-        #This will save a lot of time when a coloring is impossible
-        do_initial_coloring(graph, c_state)
+    hypotheticals = list()
     
-    #Everything is initialized now
     while True: #This will end
-        if not c_state.uncolored: #The whole thing is colored
+        if not c_state.uncolored: #It's all colored
             return c_state.colorings
-    
+        
         numbers_of_colors = sorted(list(set(c_state.nodes_from_numbers)))
         for num in numbers_of_colors:
-            
             nodes = c_state.nodes_from_numbers[num]
             if not nodes:
                 continue
             
             if num == 0:
-                #There are no colors to color it with
-                #we failed
-                return False
+                #There are no colors to color this node with,
+                #so pop the current hypothetical if there is one,
+                #or fail if there isn't.
+                if hypotheticals:
+                    #Pop the current hypothetical and rule out its premise.
+                    ch = hypotheticals.pop()
+                    c_state = ch.coloring_state
+                    c_state.rule_out_color(ch.node, ch.color)
+                    break #Go back to the top and iterate again
+                else:
+                    return False #We failed to color the graph
             
-            node = next(iter(nodes))
-            colors = c_state.possible_colors_from_nodes[node]
-            color = next(iter(colors))
-            
-            #No need for recursion
-            #if this fails, the whole thing fails
             if num == 1:
+                #No need for a hypothetical, just set the color
+                node = next(iter(nodes))
+                color = next(iter(c_state.possible_colors_from_nodes[node]))
                 c_state.set_color(node, color)
-            #There's more than one color
-            else:
-                copy_c_state = c_state.copy()
-                copy_c_state.set_color(node, color)
-                s_result = color_graph(graph, c_state=copy_c_state)
-                if s_result:
-                    return s_result
-                #It didn't work, so that color doesn't work for this node
-                c_state.rule_out_color(node, color)
+                break #Go back to the top and iterate again
             
-            #This loop is only supposed to do one step at a time
-            break
+            else:
+                #num >= 2
+                #we need to make a hypothetical
+                #which now doesn't involve any recursion
+                node = next(iter(nodes))
+                color = next(iter(c_state.possible_colors_from_nodes[node]))
+                hypothetical = ColoringHypothetical(c_state, node, color)
+                hypotheticals.append(hypothetical)
+                
+                c_state.set_color(node, color)
+
+# def color_graph(graph=None, n_colors=None, c_state=None):
+    
+#     if c_state is None:
+#         if graph is None:
+#             raise ValueError('Both arguments are none')
+        
+#         # print('n_colors: {}'.format(n_colors))
+#         c_state = ColoringState(graph, n_colors=n_colors)
+        
+#         #This will save a lot of time when a coloring is impossible
+#         do_initial_coloring(graph, c_state)
+    
+#     #Everything is initialized now
+#     while True: #This will end
+#         if not c_state.uncolored: #The whole thing is colored
+#             return c_state.colorings
+    
+#         numbers_of_colors = sorted(list(set(c_state.nodes_from_numbers)))
+#         for num in numbers_of_colors:
+            
+#             nodes = c_state.nodes_from_numbers[num]
+#             if not nodes:
+#                 continue
+            
+#             if num == 0:
+#                 #There are no colors to color it with
+#                 #we failed
+#                 return False
+            
+#             node = next(iter(nodes))
+#             colors = c_state.possible_colors_from_nodes[node]
+#             color = next(iter(colors))
+            
+#             #No need for recursion
+#             #if this fails, the whole thing fails
+#             if num == 1:
+#                 c_state.set_color(node, color)
+#             #There's more than one color
+#             else:
+#                 copy_c_state = c_state.copy()
+#                 copy_c_state.set_color(node, color)
+#                 s_result = color_graph(graph, c_state=copy_c_state)
+#                 if s_result:
+#                     return s_result
+#                 #It didn't work, so that color doesn't work for this node
+#                 c_state.rule_out_color(node, color)
+            
+#             #This loop is only supposed to do one step at a time
+#             break
 
 def reduce_graph(graph, n_colors):
     """
@@ -224,7 +279,7 @@ def verify_colorable(graph, n_colors):
     if len(graph) == 0:
         return True
     
-    print('Finding coloring')
+    # print('Finding coloring')
     return bool(color_graph(graph=graph, n_colors=n_colors))
 
 def get_heule_subwalk(offset=0):
