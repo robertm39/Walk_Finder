@@ -81,12 +81,18 @@ class Graph:
             for n2 in n2s:
                 if n2 in checked:
                     continue
-                c_graph.add_edge(n1, n2s)
+                c_graph.add_edge(n1, n2)
         
         return c_graph
     
     def __iter__(self):
         return iter(self.edge_dict)
+
+    def __len__(self):
+        return len(self.nodes)
+    
+    def __contains__(self, node):
+        return node in self.nodes
 
 class SubWalk:
     def __init__(self, coords_from_nodes):
@@ -917,6 +923,6 @@ def color_graph_test():
     walk, graph = file_reader.read_from_file(filename)
     print('Verifying colorable:')
     #Now I'm only verifying colorability, so it should be much faster
-    result = big_graph_finder.verify_colorable(graph=graph, n_colors=4)
+    result = big_graph_finder.verify_colorable(graph=graph, n_colors=6)
     print(result)
     

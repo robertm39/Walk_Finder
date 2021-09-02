@@ -135,8 +135,8 @@ def iterative_test():
 import sys
 
 def main():
-    #Recursion limit of 1,000,000 should be enough
-    sys.setrecursionlimit(10000000)
+    #Recursion limit of 10,000 should be enough
+    sys.setrecursionlimit(10000)
     
     # iterative_test()
     # eigen_walk_finder.eigen_test()
@@ -144,7 +144,8 @@ def main():
     # walk_builder.walk_builder_test()
     # walk_builder.color_test()
     # walk_builder.file_test()
-    walk_builder.node_adder_test()
+    # walk_builder.node_adder_test()
+    walk_builder.color_graph_test()
     # point_store.key_test()
     # point_store.ring_test()
     # point_store.point_store_test()

@@ -119,6 +119,7 @@ def do_initial_coloring(graph, c_state):
                     return
 
 #Want to find a graph that can't be five-colored
+#I need to change this so it doesn't use recursion
 def color_graph(graph=None, n_colors=None, c_state=None):
     
     if c_state is None:
@@ -178,11 +179,41 @@ def reduce_graph(graph, n_colors):
     while changed:
         changed = False
         nodes = set(graph)
+        print('Remain {} nodes'.format(len(nodes)))
         for node in nodes:
             num_edges = len(graph.adjacent(node))
             if num_edges < n_colors:
-                graph.remove(node)
+                graph.remove_node(node)
                 changed = True
+        
+        #Check to see if edges were removed correctly
+        if not check_graph(graph):
+            raise ValueError('Edges were removed wrong')
+    
+    if not check_num_edges(graph, n_colors):
+        raise ValueError('Nodes remaining without enough edges')
+    
+    print('Done')
+
+def check_graph(graph):
+    """
+    Verify that all edges in the given graph are between nodes in the graph.
+    """
+    for n1 in graph:
+        for n2 in graph.adjacent(n1):
+            if not n2 in graph:
+                return False
+    return True
+
+def check_num_edges(graph, n_edges):
+    """
+    Verify that all nodes in the given graph have at least n_edges edges.
+    """
+    for node in graph:
+        adj = graph.adjacent(node)
+        if len(adj) < n_edges:
+            return False
+    return True
 
 def verify_colorable(graph, n_colors):
     #We're gonna considerably change the graph, so make a copy
@@ -193,6 +224,7 @@ def verify_colorable(graph, n_colors):
     if len(graph) == 0:
         return True
     
+    print('Finding coloring')
     return bool(color_graph(graph=graph, n_colors=n_colors))
 
 def get_heule_subwalk(offset=0):
