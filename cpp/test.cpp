@@ -8,8 +8,9 @@ using std::cout;
 using std::stringstream;
 using std::endl;
 using std::sqrt;
-
-//using point::Point;
+using std::asin;
+using std::cos;
+using std::sin;
 
 //code adapted from
 //https://www.boost.org/doc/libs/1_77_0/libs/multiprecision/doc/html/boost_multiprecision/tut/input_output.html
@@ -59,6 +60,22 @@ void point_test()
     cout << "p2: " << p2 << endl;
     cout << "p1 + p2: " << p1 + p2 << endl;
     cout << "len of p2: " << p2.norm() << endl;
+
+    b_float neg_third = b_float(-1) / 3;
+    cout << "Negative third: " << neg_third << endl;
+    cout << "abs of negative third: " << abs(neg_third) << endl;
+
+    cout << "Testing trig:" << endl;
+    b_float pi = asin(b_float(1)) * 2;
+    cout << "Pi: " << pi << endl;
+    b_float theta = pi / 4;
+    cout << "Theta: " << theta << endl;
+
+    b_float cos_t = cos(theta);
+    b_float sin_t = sin(theta);
+    cout << "cos(theta): " << cos_t << endl;
+    cout << "sin(theta): " << sin_t << endl;
+    cout << "sum of squares: " << (cos_t*cos_t) + (sin_t*sin_t) << endl;
 }
 
 int main()

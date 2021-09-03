@@ -20,6 +20,12 @@ class Point
         Point perp() const {return Point(-y_, x_);}
 };
 
+const b_float dist(const Point&, const Point&);
+
+//Whether the two numbers are within EPS
+//I didn't want to make an entire file to put this in
+bool same(const b_float&, const b_float&);
+
 const Point operator+(const Point&, const Point&);
 const Point operator-(const Point&, const Point&);
 

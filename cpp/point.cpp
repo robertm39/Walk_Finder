@@ -3,6 +3,18 @@
 #include "constants.hpp"
 #include "point.hpp"
 
+//This method is mainly for aesthetics
+const b_float dist(const Point &p1, const Point &p2)
+{
+    return (p2 - p1).norm();
+}
+
+bool same(const b_float &b1, const b_float &b2)
+{
+    b_float diff = b2 - b1;
+    return abs(diff) <= EPS; //abs does work with the high-precision values
+}
+
 const Point operator+(const Point &p1, const Point &p2) {return Point(p1.x() + p2.x(), p1.y() + p2.y());}
 const Point operator-(const Point &p1, const Point &p2) {return Point(p1.x() - p2.x(), p1.y() - p2.y());}
 
