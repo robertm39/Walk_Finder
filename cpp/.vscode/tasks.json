@@ -12,7 +12,8 @@
 				"-o",
 				"${fileDirname}\\${fileBasenameNoExtension}.exe",
 				"-I",
-				"C:\\Program Files\\boost\\boost_1_77_0"
+				"C:\\Program Files\\boost\\boost_1_77_0"//,
+				//"C:\\Users\\rober\\.spyder-py3\\Robert_Python\\Walk_Finder\\cpp"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
