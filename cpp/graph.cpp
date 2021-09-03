@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 
 #include <utility>
 #include <map>
@@ -22,8 +22,8 @@ Graph::Graph(const Graph &g)
 
     //Add all the edges to this graph
     set<int> checked_nodes;
-    set<int>::const_iterator node_begin = g.nodes_cbegin();
-    set<int>::const_iterator node_end = g.nodes_cend();
+    node_begin = g.nodes_cbegin();
+    node_end = g.nodes_cend();
     for(int n1 = *node_begin; node_begin!=node_end; node_begin++)
     {
         checked_nodes.insert(n1);

@@ -3,7 +3,6 @@
 
 #include "constants.hpp"
 #include "point.hpp"
-#include "point.cpp" //sketchy but it doesn't work otherwise
 
 using std::cout;
 using std::stringstream;
@@ -58,7 +57,7 @@ void point_test()
 
     Point p2(5, 1);
     cout << "p2: " << p2 << endl;
-    cout << "p1 + p2: " << p1+p2 << endl;
+    cout << "p1 + p2: " << p1 + p2 << endl;
     cout << "len of p2: " << p2.norm() << endl;
 }
 

@@ -20,13 +20,13 @@ class Point
         Point perp() const {return Point(-y_, x_);}
 };
 
-Point operator+(const Point &p1, const Point &p2) {return Point(p1.x() + p2.x(), p1.y() + p2.y());}
-Point operator-(const Point &p1, const Point &p2) {return Point(p1.x() - p2.x(), p1.y() - p2.y());}
+const Point operator+(const Point&, const Point&);
+const Point operator-(const Point&, const Point&);
 
 //Define scalar multiplication both ways
-Point operator*(const Point &p1, const b_float &s) {return Point(p1.x() * s, p1.y() * s);}
-Point operator*(const b_float &s, const Point &p1) {return Point(p1.x() * s, p1.y() * s);}
+const Point operator*(const Point&, const b_float&);
+const Point operator*(const b_float&, const Point&);
 
-Point operator/(const Point &p1, const b_float &s) {return Point(p1.x() * s, p1.y() / s);}
+const Point operator/(const Point&, const b_float&);
 
 ostream& operator<<(ostream&, const Point&);

@@ -5,7 +5,6 @@
 
 #include "constants.hpp"
 #include "point.hpp"
-#include "point.cpp" //necessary, it seems
 
 using std::map;
 using std::set;
