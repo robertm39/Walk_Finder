@@ -98,6 +98,9 @@ class Graph:
     
     def __contains__(self, node):
         return node in self.nodes
+    
+    def __bool__(self):
+        return bool(self.nodes)
 
 class SubWalk:
     def __init__(self, coords_from_nodes):
@@ -895,7 +898,7 @@ def file_test():
     dims = (500, 500)
     graph_shower.make_graph_png_with_lines(f_tensor, f_edges, dims=dims)
 
-def node_adder_test():
+def node_adder_test(r_filename=None):
     #The first test is to expand a line
     # edges = [(0, 1)]
     # n = 2
@@ -921,11 +924,17 @@ def node_adder_test():
     
     #Now it isn't a test anymore
     #load the spindle, built three times, reduced up to 8
-    walk, graph = file_reader.read_from_file('spindle_3b_8r.txt')
+    if r_filename is None:
+        r_filename = 'spindle_3b_8r_1b_9r.txt'
+    walk, graph = file_reader.read_from_file(r_filename)
     
     # show_walk(nodes, walk, graph)
     
-    filename_base = 'spindle_3b_8r_{}b.txt'
+    # filename_base = 'spindle_3b_8r_1b_9r_{}b.txt'
+    
+    #Make the filename programatically now
+    trimmed_r = r_filename[:-4] #get rid of the .txt
+    filename_base = trimmed_r + '_{}b.txt'
     
     file_reader.write_to_file(walk, graph, filename_base.format(0))
     
@@ -934,9 +943,9 @@ def node_adder_test():
     ps1 = None
     ps2 = None
     
-    #Maybe I can build this one twice
-    #Even once should be pretty good
-    for i in range(1, 3):
+    #I'm only gonna try to build once
+    #let's see if I can push the min number of edges per node up even more
+    for i in [1]:
         filename = filename_base.format(i)
         print('Starting {}'.format(filename))
         ps1, ps2 = big_graph_finder.add_new_nodes(walk,
@@ -947,9 +956,10 @@ def node_adder_test():
         print('Finished {}'.format(filename))
         
         # nodes = sorted(list(walk))
-        
+    
+    return filename
         # show_walk(nodes, walk, graph)
-    print('Finished')
+    # print('Finished')
     
     # dims = (1500, 1500)
     # show_walk(nodes, walk, graph, dims=dims)
@@ -960,14 +970,14 @@ def node_adder_test():
     # print(result)
 
 def color_graph_test():
-    filename = 'spindle_iter_3.txt'
+    filename = 'spindle_3b_8r_1b_9r.txt'
     walk, graph = file_reader.read_from_file(filename)
     print('Verifying colorable:')
     #Now I'm only verifying colorability, so it should be much faster
     #maybe it won't be five-colorable, even after reducing a bunch
     #because these are the best nodes
     n_colors = 5
-    reduce = 7
+    reduce = 9
     print('Finding coloring with {} colors'.format(n_colors))
     result = big_graph_finder.verify_colorable(graph=graph,
                                                n_colors=n_colors,
@@ -978,16 +988,56 @@ def color_graph_test():
     else:
         print('Uncolorable')
 
-def save_trimmed_spindles():
-    r_filename = 'spindle_iter_3.txt'
+#Now I'm really stacking these
+def save_trimmed_spindles(r_filename=None, trim_num=9):
+    if r_filename is None:
+        r_filename = 'spindle_3b_8r_1b.txt'
+    
     walk, graph = file_reader.read_from_file(r_filename)
     
-    t_filename = 'spindle_3b_{}r.txt'
+    # t_filename = 'spindle_3b_8r_1b_{}r.txt'
+    
+    #Now I need to programatically choose the filename
+    t_filename = r_filename[:-4] + '_{}r.txt'
+    
     #Get the trimmed versions of the graphs and the walks
-    for i in range(5, 9):
+    #Keep trimming until it's empty
+    
+    #Actually I'll just start with nine
+    #I might want the extras anyways
+    i=9
+    prev_len = len(graph)
+    while True:
         filename = t_filename.format(i)
         print('Doing ' + filename)
         big_graph_finder.reduce_graph(graph, i)
+        
+        if len(graph) == 0:
+            print('\n*********************************************')
+            print('No nodes left!')
+            print('The farthest we got was {} edges per node.'.format(i-1))
+            print('There were {} nodes.'.format(prev_len))
+            last_filename = t_filename.format(i-1)
+            print('*********************************************\n')
+            break
         walk, graph = with_renamed_nodes(walk, graph)
         file_reader.write_to_file(walk, graph, filename)
         print(filename + ' Done\n')
+        
+        prev_len = len(graph)
+        i += 1
+    
+    return last_filename
+
+def build_and_trim():
+    print('Starting build and trim')
+    print('Let\'s hope this makes some good graphs')
+    
+    #Start with this file, the one that's been built most recently
+    r_filename = 'spindle_3b_8r_1b_9r_1b.txt'
+    #Just keep trimming and building, saving all the way
+    while True:
+        print('\nTRIMMING')
+        r_filename = save_trimmed_spindles(r_filename=r_filename)
+        print('\nBUILDING')
+        r_filename = node_adder_test(r_filename=r_filename)

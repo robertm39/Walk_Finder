@@ -377,6 +377,7 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
     #I can tweak the number of decimals for optimization
     
     if ps1 is None:
+        #Let's try this with three decimals and see if it's faster
         num_decimals = 2
         ps1 = point_store.PointStore(num_decimals=num_decimals)
         ps2 = point_store.PointStore(num_decimals=0,
@@ -399,6 +400,8 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
     checked = set()
     
     for n1, c1 in walk.items():
+        # if n1 % 10 == 0:
+        #     print('Doing {}'.format(n1))
         checked.add(n1)
         for c2, n2 in ps2.get_entries_within_two(c1):
             if n2 in checked:
@@ -469,7 +472,12 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
     
     using_point_store=True
     
+    print('{} new points to check'.format(len(new_points)))
+    i = 1
     for c1 in new_points:
+        if i % 10000 == 0:
+            print('Checking {}'.format(i))
+        i += 1
         
         #Find all nodes unit distance from this node and add the edges
         #This node is not in the walk, so no need to check for that
