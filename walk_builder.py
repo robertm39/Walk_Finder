@@ -17,9 +17,6 @@ from constants import EPS
 SQRT_3_OVER_4 = math.sqrt(3) / 2
 # EPS = 1e-10
 
-#Maybe change to long double for more precise equality tests
-#(since this is very important) 
-#Actually long double isn't any longer on this platform
 DTYPE = np.double
 
 CONTINUE = object()
