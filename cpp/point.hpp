@@ -16,6 +16,7 @@ class Point
         Point(b_float x, b_float y): x_(x), y_(y) {}
         b_float x() const {return x_;}
         b_float y() const {return y_;}
+        b_float norm() const {return sqrt(x_*x_ + y_*y_);}
         Point perp() const {return Point(-y_, x_);}
 };
 

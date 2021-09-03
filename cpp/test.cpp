@@ -59,6 +59,7 @@ void point_test()
     Point p2(5, 1);
     cout << "p2: " << p2 << endl;
     cout << "p1 + p2: " << p1+p2 << endl;
+    cout << "len of p2: " << p2.norm() << endl;
 }
 
 int main()

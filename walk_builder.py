@@ -28,6 +28,10 @@ def coords(x, y):
     return np.array([x, y], dtype=DTYPE)
 
 class Graph:
+    """
+    Store a Graph with nodes and edges.
+    No information about coords of nodes.
+    """
     def __init__(self, nodes=None, edges=None):
         if nodes is None:
             nodes = set()
