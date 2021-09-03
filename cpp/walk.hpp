@@ -13,7 +13,7 @@ class Walk
 {
     private:
         set<int> nodes_;
-        map<int, Point> coords_;
+        map<int, Point> coords_; //stores points by value, so it doesn't matter if the originals are destroyed
     public:
         Walk() {}
         Walk(const Walk&); //Copy constructor instead of an explicit copy method

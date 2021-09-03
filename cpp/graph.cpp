@@ -22,17 +22,21 @@ Graph::Graph(const Graph &g)
 
     //Add all the edges to this graph
     set<int> checked_nodes;
-    node_begin = g.nodes_cbegin();
+    
     node_end = g.nodes_cend();
-    for(int n1 = *node_begin; node_begin!=node_end; node_begin++)
+    int n1;
+    for(node_begin = g.nodes_cbegin(); node_begin!=node_end; node_begin++)
     {
+        n1 = *node_begin;
         checked_nodes.insert(n1);
 
-        set<int>::const_iterator edge_begin = g.edges_cbegin(n1);
+        
         set<int>::const_iterator edge_end = g.edges_cend(n1);
 
-        for(int n2 = *edge_begin; edge_begin!=edge_end; edge_begin++)
+        int n2;
+        for(set<int>::const_iterator edge_begin = g.edges_cbegin(n1); edge_begin!=edge_end; edge_begin++)
         {
+            n2 = *edge_begin;
             //Skip nodes we've already gone over
             //This probably speeds it up
             if(checked_nodes.find(n2) != checked_nodes.end())

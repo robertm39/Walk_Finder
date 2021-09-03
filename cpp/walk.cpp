@@ -10,11 +10,13 @@ using std::make_pair;
 
 Walk::Walk(const Walk &walk)
 {
-    set<int>::const_iterator n_begin = walk.cbegin();
+    
     set<int>::const_iterator n_end = walk.cend();
 
-    for(int n = *n_begin; n_begin != n_end; n_begin++)
+    int n = 0;
+    for(set<int>::const_iterator n_begin = walk.cbegin(); n_begin != n_end; n_begin++)
     {
+        n = *n_begin;
         add_node(n, walk.coords(n));
     }
 }
