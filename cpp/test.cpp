@@ -3,6 +3,8 @@
 
 #include "constants.hpp"
 #include "point.hpp"
+#include "walk.hpp"
+#include "graph.hpp"
 
 using std::cout;
 using std::stringstream;
@@ -78,12 +80,86 @@ void point_test()
     cout << "sum of squares: " << (cos_t*cos_t) + (sin_t*sin_t) << endl;
 }
 
+void print_nodes(const Walk &w)
+{
+    set<int>::const_iterator end = w.cend();
+    for(set<int>::const_iterator begin = w.cbegin(); begin != end; begin++)
+    {
+        int node = *begin;
+        cout << "Node: " << node << endl;
+    }
+}
+
+void walk_test()
+{
+    Walk walk;
+    Point p(0.5, 0);
+    walk.add_node(0, p);
+    cout << "num of nodes: " << walk.size() << endl;
+    cout << "coords of node 0: "<< walk.coords(0) << endl;
+
+    walk.add_node(1, Point(1, 2));
+    cout << "num of nodes: " << walk.size() << endl;
+    walk.add_node(2, Point(-2, 2.5));
+    
+    cout << "num of nodes: " << walk.size() << endl;
+    cout << "coords of node 0: "<< walk.coords(0) << endl;
+    cout << "coords of node 1: "<< walk.coords(1) << endl;
+    cout << "coords of node 2: "<< walk.coords(2) << endl;
+
+    cout << "Printing nodes: "<< endl;
+    print_nodes(walk);
+
+    cout << "has node 1: " << walk.has_node(1) << endl;
+    cout << "has node 3: " << walk.has_node(3) << endl;
+
+    cout << "Removing 1" << endl;
+    walk.remove_node(1);
+    cout << "num of nodes: " << walk.size() << endl;
+    cout << "has node 1: " << walk.has_node(1) << endl;
+    
+    cout << "Printing nodes: "<< endl;
+    print_nodes(walk);
+    //cout << "coords of node 1: "<< walk.coords(1) << endl;
+}
+
+void graph_test()
+{
+    Graph graph;
+    cout << "size: " << graph.size() << endl;
+
+    cout << "Adding node 0" << endl;
+    graph.add_node(0);
+    cout << "size: " << graph.size() << endl;
+
+    cout << "Has node 1: "<< graph.has_node(1) << endl;
+    cout << "Adding node 1" << endl;
+    graph.add_node(1);
+    cout << "Has node 1: "<< graph.has_node(1) << endl;
+    cout << "size: " << graph.size() << endl;
+
+    cout << "Edge between 0 and 1: " << graph.has_edge(0, 1) << endl;
+
+    cout << "Adding edge between 0 and 1: " << endl;
+    graph.add_edge(0, 1);
+    cout << "Edge between 0 and 1: " << graph.has_edge(0, 1) << endl;
+
+    cout << "Removing node 1" << endl;
+    graph.remove_node(1);
+    cout << "Has node 1: "<< graph.has_node(1) << endl;
+    cout << "size: " << graph.size() << endl;
+    cout << "Edge between 0 and 1: " << graph.has_edge(0, 1) << endl;
+}
+
 int main()
 {
+    //These two lines from the boost tutorial for multipleprecision
     cout.precision(std::numeric_limits<b_float>::max_digits10);  // Ensure all potentially significant bits are output.
     cout.flags(std::ios_base::fmtflags(std::ios_base::scientific)); // Use scientific format.
 
-    point_test();
+    //point_test();
+    //walk_test();
+    graph_test();
 
     return 0;
 }

@@ -9,6 +9,7 @@
 using std::map;
 using std::set;
 
+//Tested and worked
 class Walk
 {
     private:
