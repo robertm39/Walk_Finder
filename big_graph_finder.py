@@ -368,7 +368,6 @@ def get_heule_subwalk(offset=0):
     subwalk = walk_builder.SubWalk(coords_from_nodes)
     return subwalk, edges
 
-#Improve this to use PointStore
 def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
     """
     Add all points at unit distance from at least two points in the graph.
