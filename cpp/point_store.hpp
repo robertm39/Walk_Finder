@@ -6,6 +6,7 @@
 #include "constants.hpp"
 #include "point.hpp"
 #include "point_store_key.hpp"
+#include "node_iterators.hpp"
 
 using std::map;
 using std::vector;
@@ -26,11 +27,17 @@ class PointStore
         PointStore(int, bool, bool, bool);
 
         void add_node(int, const Point&);
-        
-        vector<int>::const_iterator within_one_cbegin(const Point&);
+
+        NodeIterators at_one(const Point&);
+        NodeIterators same_place(const Point&);
+        NodeIterators within_two(const Point&);
+
+        /*vector<int>::const_iterator within_one_cbegin(const Point&);
         vector<int>::const_iterator within_one_cend(const Point&);
         vector<int>::const_iterator same_place_cbegin(const Point&);
         vector<int>::const_iterator same_place_cend(const Point&);
         vector<int>::const_iterator within_two_cbegin(const Point&);
-        vector<int>::const_iterator within_two_cend(const Point&);
+        vector<int>::const_iterator within_two_cend(const Point&);*/
 };
+
+int get_key(b_float num, int num_decimals); //temporarily add access for testing

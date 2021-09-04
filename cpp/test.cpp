@@ -5,6 +5,7 @@
 #include "point.hpp"
 #include "walk.hpp"
 #include "graph.hpp"
+#include "point_store.hpp"
 
 using std::cout;
 using std::stringstream;
@@ -151,6 +152,27 @@ void graph_test()
     cout << "Edge between 0 and 1: " << graph.has_edge(0, 1) << endl;
 }
 
+void disp_val_and_key(const b_float &val, int num_decimals)
+{
+    cout << "Val: " << val << endl;
+    cout << "Key: " << get_key(val, num_decimals) << endl;
+}
+
+void point_store_test()
+{
+    b_float zero(0);
+    b_float tenth("0.1");
+    b_float tiny("0.00000001");
+    b_float neg_tiny("-0.00000001");
+
+    int num_decimals = 2;
+
+    disp_val_and_key(zero, num_decimals);
+    disp_val_and_key(tenth, num_decimals);
+    disp_val_and_key(tiny, num_decimals);
+    disp_val_and_key(neg_tiny, num_decimals);
+}
+
 int main()
 {
     //These two lines from the boost tutorial for multipleprecision
@@ -159,7 +181,8 @@ int main()
 
     //point_test();
     //walk_test();
-    graph_test();
+    //graph_test();
+    point_store_test();
 
     return 0;
 }
