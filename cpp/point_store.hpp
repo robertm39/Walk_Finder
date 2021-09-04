@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "constants.hpp"
@@ -8,7 +8,7 @@
 #include "point_store_key.hpp"
 #include "node_iterators.hpp"
 
-using std::map;
+using std::unordered_map;
 using std::vector;
 
 class PointStore
@@ -20,9 +20,9 @@ class PointStore
         const bool has_within_two_;
         vector<PointStoreKey> one_away_cells_;//may not be used
         vector<PointStoreKey> within_two_cells_;//may not be used
-        map<PointStoreKey, vector<int>> one_away_;//may not be used
-        map<PointStoreKey, vector<int>> same_place_;//may not be used
-        map<PointStoreKey, vector<int>> within_two_;//may not be used
+        unordered_map<int, vector<int>> one_away_;//may not be used
+        unordered_map<int, vector<int>> same_place_;//may not be used
+        unordered_map<int, vector<int>> within_two_;//may not be used
     public:
         PointStore(int, bool, bool, bool);
 

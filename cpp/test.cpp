@@ -155,7 +155,8 @@ void graph_test()
 void disp_val_and_key(const b_float &val, int num_decimals)
 {
     cout << "Val: " << val << endl;
-    cout << "Key: " << get_key(val, num_decimals) << endl;
+    int key = get_key(val, num_decimals);
+    cout << "Key: " << key << endl << endl;
 }
 
 void point_store_test()
@@ -168,10 +169,19 @@ void point_store_test()
     int num_decimals = 2;
 
     disp_val_and_key(zero, num_decimals);
-    disp_val_and_key(tenth, num_decimals);
+    disp_val_and_key(tenth, num_decimals); //the key should be 10 (or 9, I guess)
     disp_val_and_key(tiny, num_decimals);
     disp_val_and_key(neg_tiny, num_decimals);
+    disp_val_and_key(b_float(-3), num_decimals); //-400
+    disp_val_and_key(b_float(5), num_decimals); // 500
+    disp_val_and_key(b_float("5.23"), num_decimals); // 523 (0r 522)
+    disp_val_and_key(b_float("10.01"), num_decimals); // 1001
 }
+
+//with this setup:
+//int: 4 bytes
+//long: 4 bytes
+//long long: 8 bytes
 
 int main()
 {
