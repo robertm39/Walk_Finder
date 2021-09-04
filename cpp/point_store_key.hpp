@@ -1,5 +1,9 @@
 #pragma once
 
+#include <iostream>
+
+using std::ostream;
+
 //using std::size_t;
 
 //These won't actually be used as keys now
@@ -33,3 +37,5 @@ namespace std
 const PointStoreKey operator+(const PointStoreKey&, const PointStoreKey&);
 
 bool operator==(const PointStoreKey&, const PointStoreKey&);
+
+ostream& operator<<(ostream &, const PointStoreKey&);

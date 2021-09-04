@@ -16,8 +16,8 @@ using std::strncpy;
 using std::make_pair;
 
 // for testing
-//using std::cout;
-//using std::endl;
+using std::cout;
+using std::endl;
 
 //Make the circle methods
 const vector<PointStoreKey> SAME_CELLS {PointStoreKey( 0,  0),
@@ -237,10 +237,14 @@ int get_key(b_float num, int num_decimals)
     //cout << "Getting key for " << num << endl;
     //cout << "using " << num_decimals << " decimals" << endl;
     stringstream ss;  // Read and write std::stringstream.
-    ss.precision(std::numeric_limits<b_float>::max_digits10);  // Ensure all potentially significant bits are output.
-    ss.flags(std::ios_base::fmtflags(std::ios_base::fixed)); // Use scientific format.
+    ss.precision(std::numeric_limits<b_float>::max_digits10);
+    //ss.precision(num_decimals + 1);
+    ss.flags(std::ios_base::fmtflags(std::ios_base::fixed)); // use fixed format
     ss << num; //I forgot this at first
     string num_s = ss.str();
+    
+    //cout << endl;
+    //cout << num_s << endl; //see what it is
     //hope that this forces num_s to be formatted right
     //cout << "converted to string: " << endl;
     //cout << num_s << endl;
@@ -259,7 +263,8 @@ int get_key(b_float num, int num_decimals)
         //cout << "padded: " << endl;
         //cout << num_s << endl;
     }
-
+    //cout << "c_str:" << endl;
+    //cout << num_s.c_str() << endl;
     //cout << "trimming number" << endl;
     //get the first (decimal_index + num_decimals + 1) chars from the string
     char *trimmed = new char[decimal_index + num_decimals + 2]; //add a space for the null terminator
@@ -267,7 +272,7 @@ int get_key(b_float num, int num_decimals)
 
     //Add the null terminator at the end
     //this is necessary because I didn't get the entire source string
-    trimmed[decimal_index + num_decimals + 1] ; '\0';
+    trimmed[decimal_index + num_decimals + 1] = '\0';
 
     //cout << "trimmed: " << endl;
     //cout << trimmed << endl;
@@ -322,6 +327,7 @@ PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_
     if(has_same_place_)
     {
         one_away_cells_ = get_unit_cells(num_decimals_);
+        //cout << "one_away_cells_.size(): " << one_away_cells_.size() << endl;
     }
     if(has_within_two_)
     {
@@ -331,9 +337,32 @@ PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_
     //The dictionaries are already initialized
 }
 
+PointStore::~PointStore()
+{
+    for(vector<int> *v: vectors_)
+    {
+        delete v; //delete all the allocated vectors
+    }
+}
+
+//Add a node to the given map with the given key
+void PointStore::add_node_to_map(int key, int node, unordered_map<int, vector<int>*> &m)
+{
+    //See if the map already has a vector<int>* for that point
+    if(m.count(key) == 0)
+    {
+        vector<int> *v = new vector<int>(); //deallocate in the destructor
+        vectors_.push_back(v);
+        m.insert(make_pair(key, v));
+    }
+    vector<int> *v = m.at(key);
+    v->push_back(node);
+}
+
 void PointStore::add_node(int node, const Point &point)
 {
     PointStoreKey p_key = get_point_key(point, num_decimals_);
+    //cout << "p_key: " << p_key << endl;
 
     if(has_same_place_)
     {
@@ -344,18 +373,41 @@ void PointStore::add_node(int node, const Point &point)
             //I'm not including the points in the values
             //because it takes up way too much memory
             //you can just get the points from the Walk
-            same_place_.insert(make_pair(real_key, node));
+
+            add_node_to_map(real_key, node, same_place_);
+            //same_place_.insert(make_pair(real_key, node));
         }
     }
 
     if(has_one_away_)
     {
+        //cout << endl;
+        for(const PointStoreKey &dp: one_away_cells_)
+        {
+            //cout << dp << endl;
+            //cout << "(" << dp.x() << ", " << dp.y() << ")" << endl;
+            PointStoreKey total_key = p_key + dp;
+            int real_key = get_full_key(total_key);
+
+            add_node_to_map(real_key, node, one_away_);
+            //one_away_.insert(make_pair(real_key, node));
+        }
+        //cout << endl;
+        //check that all of the cells really have been set
+        
+        /*bool succeeded = true;
         for(const PointStoreKey &dp: one_away_cells_)
         {
             PointStoreKey total_key = p_key + dp;
             int real_key = get_full_key(total_key);
-            one_away_.insert(make_pair(real_key, node));
+            
+            if(one_away_.count(real_key) == 0)
+            {
+                cout << "failed: " << total_key << endl;
+                succeeded = false;
+            }
         }
+        cout << "succeeded: " << succeeded << endl;*/
     }
 
     if(has_within_two_)
@@ -364,46 +416,69 @@ void PointStore::add_node(int node, const Point &point)
         {
             PointStoreKey total_key = p_key + dp;
             int real_key = get_full_key(total_key);
-            within_two_.insert(make_pair(real_key, node));
+
+            add_node_to_map(real_key, node, within_two_);
+            //within_two_.insert(make_pair(real_key, node));
         }
     }
 }
 
-NodeIterators PointStore::at_one(const Point &p)
+NodeIterators PointStore::one_away(const Point &p)
 {
-    int key = get_full_key(get_point_key(p, num_decimals_));
-    vector<int> nodes;
-    if(one_away_.count(key)) //slightly redundant, but I don't think this will be the slowest part
+    //cout << "getting key" << endl;
+    PointStoreKey p_key = get_point_key(p, num_decimals_);
+    //cout << p_key << endl;
+    int key = get_full_key(p_key);
+    vector<int> *nodes;
+    if(one_away_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
+        //cout << "found a bucket" << endl;
         nodes = one_away_.at(key);
+    } else {
+        cout << "failed at point:" << endl;
+        cout << p << endl;
+        cout << p_key << endl;
+        cout << key << endl;
+        //dereferencing the end of a list is an error anyways
+        //so this should be fine
+        return NodeIterators(static_cast<vector<int>::const_iterator>(nullptr), static_cast<vector<int>::const_iterator>(nullptr));
     }
-    auto begin_it = nodes.cbegin();
-    auto end_it = nodes.cend();
+    //cout << "Found " << nodes->size() << " node(s)" << endl;
+    auto begin_it = nodes->cbegin();
+    auto end_it = nodes->cend();
     return NodeIterators(begin_it, end_it);
 }
 
 NodeIterators PointStore::same_place(const Point &p)
 {
     int key = get_full_key(get_point_key(p, num_decimals_));
-    vector<int> nodes;
-    if(same_place_.count(key)) //slightly redundant, but I don't think this will be the slowest part
+    vector<int> *nodes;
+    if(same_place_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
         nodes = same_place_.at(key);
+    } else {
+        //dereferencing the end of a list is an error anyways
+        //so this should be fine
+        return NodeIterators(static_cast<vector<int>::const_iterator>(nullptr), static_cast<vector<int>::const_iterator>(nullptr));
     }
-    auto begin_it = nodes.cbegin();
-    auto end_it = nodes.cend();
+    auto begin_it = nodes->cbegin();
+    auto end_it = nodes->cend();
     return NodeIterators(begin_it, end_it);
 }
 
 NodeIterators PointStore::within_two(const Point &p)
 {
     int key = get_full_key(get_point_key(p, num_decimals_));
-    vector<int> nodes;
-    if(within_two_.count(key)) //slightly redundant, but I don't think this will be the slowest part
+    vector<int> *nodes;
+    if(within_two_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
         nodes = within_two_.at(key);
+    } else {
+        //dereferencing the end of a list is an error anyways
+        //so this should be fine
+        return NodeIterators(static_cast<vector<int>::const_iterator>(nullptr), static_cast<vector<int>::const_iterator>(nullptr));
     }
-    auto begin_it = nodes.cbegin();
-    auto end_it = nodes.cend();
+    auto begin_it = nodes->cbegin();
+    auto end_it = nodes->cend();
     return NodeIterators(begin_it, end_it);
 }

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <random>
 
 #include "constants.hpp"
 #include "point.hpp"
@@ -14,6 +15,9 @@ using std::sqrt;
 using std::asin;
 using std::cos;
 using std::sin;
+using std::default_random_engine;
+using std::uniform_int_distribution;
+using std::uniform_real_distribution;
 
 //code adapted from
 //https://www.boost.org/doc/libs/1_77_0/libs/multiprecision/doc/html/boost_multiprecision/tut/input_output.html
@@ -152,26 +156,92 @@ void graph_test()
     cout << "Edge between 0 and 1: " << graph.has_edge(0, 1) << endl;
 }
 
-/*void disp_val_and_key(const b_float &val, int num_decimals)
-{
-    cout << "Val: " << val << endl;
-    int key = get_key(val, num_decimals);
-    cout << "Key: " << key << endl << endl;
-}
-
-void disp_full_key(const Point &p, int num_decimals)
-{   
-    cout.flags(std::ios_base::fmtflags(std::ios_base::scientific));
-    cout << "point: " << p << endl;
-    cout.flags(std::ios_base::fmtflags(std::ios_base::hex));
-    cout << "full key: " << get_full_key(p, num_decimals) << endl << endl;
-}*/
-
 void point_store_test()
 {
     int num_decimals = 2;
 
-    
+    //First test same_place and one_away
+
+    //This is the way to get pi
+    //I checked it, and it's accurate to all the significant places
+    b_float pi = asin(b_float(1)) * 2;
+
+    //Now test a bunch of random pairs of points
+    default_random_engine gen;
+    uniform_int_distribution<int> int_dist(-1000, 1000);
+    uniform_real_distribution<double> fl_dist(0.0, 1.0);
+
+    cout << "testing" << endl;
+    //Test a million pairs
+    bool succeeded = true;
+    PointStore ps (num_decimals, true, true, false);
+    for(int i = 1; i < 1000000 + 1; i++)
+    {
+        if(i % 10000 == 0) //output every 10,000 pairs
+        {
+            cout << i << endl;
+        }
+
+        b_float x1 = int_dist(gen) + fl_dist(gen);
+        b_float y1 = int_dist(gen) + fl_dist(gen);
+
+        b_float angle = fl_dist(gen) * 2 * pi;
+        b_float x2 = x1 + cos(angle);
+        b_float y2 = y1 + sin(angle);
+
+        Point p1(x1, y1);
+        Point p2(x2, y2);
+
+        ps.add_node(0, p1);
+
+        NodeIterators same_it = ps.same_place(p1);
+        NodeIterators one_it = ps.one_away(p2);
+
+        if(same_it.cend == same_it.cbegin)
+        {
+            cout << "same place failed:" << endl;
+            cout << p1 << endl;
+            succeeded = false;
+            break; //we failed anyways
+        }
+        if(one_it.cend == one_it.cbegin)
+        {
+            cout << endl;
+            cout << "one away failed:" << endl;
+            cout << p1 << endl;
+            cout << p2 << endl;
+            cout << "dist:" << endl;
+            cout << (p2-p1).norm() << endl;
+            succeeded = false;
+            break; //we failed anyways
+        }
+    }
+    cout << "succeeded: " << succeeded << endl;
+    /*cout << "testing: " << endl;
+    bool succeeded = true;
+    int divisions_of_degree = 10000;
+    for(int i = 0; i < 360 * divisions_of_degree; i++)
+    {
+        //cout << i << " degrees" << endl;
+        b_float rad = (i * pi) / 180 / divisions_of_degree;
+        b_float x = cos(rad);
+        b_float y = sin(rad);
+        Point p(x, y);
+        //cout << "getting iterators" << endl;
+        NodeIterators its = ps.one_away(p);
+        //cout << "counting nodes" << endl;
+        int num_nodes = its.cend - its.cbegin;
+        if(num_nodes != 1)
+        {
+            //cout << endl;
+            //cout << i << " degrees" << endl;
+            //cout << p << endl;
+            //cout << "Expected 1 node, got " << num_nodes << endl << endl;
+            succeeded = false;
+            break;
+        }
+    }
+    cout << "succeeded: " << succeeded << endl;*/
 }
 
 //with this setup:
@@ -188,7 +258,7 @@ int main()
     //point_test();
     //walk_test();
     //graph_test();
-    //point_store_test();
+    point_store_test();
 
     return 0;
 }
