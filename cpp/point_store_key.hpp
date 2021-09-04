@@ -23,6 +23,8 @@ namespace std
     };
 };
 
+const PointStoreKey operator+(const PointStoreKey&, const PointStoreKey&);
+
 /*bool operator<(const PointStoreKey&, const PointStoreKey&);
 bool operator<=(const PointStoreKey&, const PointStoreKey&);
 bool operator>(const PointStoreKey&, const PointStoreKey&);

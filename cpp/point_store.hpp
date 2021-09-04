@@ -22,7 +22,7 @@ class PointStore
         map<PointStoreKey, vector<PointStoreVal>> same_place_;
         map<PointStoreKey, vector<PointStoreVal>> within_two_;
     public:
-        PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_one_away_(h1), has_same_place_(h2), has_within_two_(h3) {}
+        PointStore(int, bool, bool, bool);
 
         void add_node(int, const Point&);
         vector<PointStoreVal> within_one(const Point&);
