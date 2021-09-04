@@ -17,13 +17,16 @@ class PointStore
         const bool has_one_away_;
         const bool has_same_place_;
         const bool has_within_two_;
-        map<PointStoreKey, vector<int>> one_away_;
-        map<PointStoreKey, vector<int>> same_place_;
-        map<PointStoreKey, vector<int>> within_two_;
+        vector<PointStoreKey> one_away_cells_;//may not be used
+        vector<PointStoreKey> within_two_cells_;//may not be used
+        map<PointStoreKey, vector<int>> one_away_;//may not be used
+        map<PointStoreKey, vector<int>> same_place_;//may not be used
+        map<PointStoreKey, vector<int>> within_two_;//may not be used
     public:
         PointStore(int, bool, bool, bool);
 
         void add_node(int, const Point&);
+        
         vector<int>::const_iterator within_one_cbegin(const Point&);
         vector<int>::const_iterator within_one_cend(const Point&);
         vector<int>::const_iterator same_place_cbegin(const Point&);

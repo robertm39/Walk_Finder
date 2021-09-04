@@ -42,9 +42,10 @@ def get_cell_ring(num_decimals=NUM_DECIMALS, _cache=dict()):
     num_cells_wide = 10 ** num_decimals #How many cells wide a 1x1 square is
     
     diag = width * np.sqrt(2)
-    #Try inflating the diag a bit
-    min_dist = 1 - diag
-    max_dist = 1 + diag
+    
+    #Pad by EPS to make sure
+    min_dist = 1 - diag - EPS
+    max_dist = 1 + diag + EPS
     
     corner_disps = (walk_builder.coords(0, 0),
                     walk_builder.coords(0, width),
@@ -225,14 +226,8 @@ def homogenize(num_s):
 #     return num_s
 
 def get_key(num, num_decimals=NUM_DECIMALS):
-    #I don't think I should actually have this
-    # if np.isclose(num, 0, rtol=0, atol=EPS):
-    #     num = 0.0
-    
     num_s = str(num)
     num_s = homogenize(num_s)
-    # if not '.' in num_s:
-    #     num_s = num_s + '.'
     
     decimal_index = num_s.index('.')
     needed_len = decimal_index+num_decimals + 1
