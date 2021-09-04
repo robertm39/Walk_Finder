@@ -234,38 +234,20 @@ vector<PointStoreKey> get_within_two_cells(int num_decimals)
 //https://www.boost.org/doc/libs/1_77_0/libs/multiprecision/doc/html/boost_multiprecision/tut/input_output.html
 int get_key(b_float num, int num_decimals)
 {
-    //cout << "Getting key for " << num << endl;
-    //cout << "using " << num_decimals << " decimals" << endl;
-    stringstream ss;  // Read and write std::stringstream.
+    stringstream ss;
     ss.precision(std::numeric_limits<b_float>::max_digits10);
-    //ss.precision(num_decimals + 1);
     ss.flags(std::ios_base::fmtflags(std::ios_base::fixed)); // use fixed format
     ss << num; //I forgot this at first
     string num_s = ss.str();
-    
-    //cout << endl;
-    //cout << num_s << endl; //see what it is
-    //hope that this forces num_s to be formatted right
-    //cout << "converted to string: " << endl;
-    //cout << num_s << endl;
 
     int decimal_index = num_s.find('.');
-    //cout << "decimal_index: " << decimal_index << endl;
     int needed_size = num_decimals + decimal_index + 1;
-    //cout << "needed_size :" << needed_size << endl;
     int size_shortfall = needed_size - num_s.size();
-    //cout << "size_shortfall: " << size_shortfall << endl;
     //If num_s doesn't have enough decimal places (not likely), pad with zeroes
     if(size_shortfall > 0)
     {
-        //cout << "Padding number" << endl;
         num_s = num_s + string('0', size_shortfall);
-        //cout << "padded: " << endl;
-        //cout << num_s << endl;
     }
-    //cout << "c_str:" << endl;
-    //cout << num_s.c_str() << endl;
-    //cout << "trimming number" << endl;
     //get the first (decimal_index + num_decimals + 1) chars from the string
     char *trimmed = new char[decimal_index + num_decimals + 2]; //add a space for the null terminator
     strncpy(trimmed, num_s.c_str(), decimal_index + num_decimals + 1);
@@ -274,27 +256,19 @@ int get_key(b_float num, int num_decimals)
     //this is necessary because I didn't get the entire source string
     trimmed[decimal_index + num_decimals + 1] = '\0';
 
-    //cout << "trimmed: " << endl;
-    //cout << trimmed << endl;
-
     //borrowing from
     //https://stackoverflow.com/questions/5891610/how-to-remove-certain-characters-from-a-string-in-c
     string final_s = string(trimmed);
-    final_s.erase(remove(final_s.begin(), final_s.end(), '.'), final_s.end()); //Get rid of the decimal point
 
-    //cout << "final_s: " << endl;
-    //cout << final_s << endl;
+    final_s.erase(remove(final_s.begin(), final_s.end(), '.'), final_s.end()); //Get rid of the decimal point
 
     int key ;
     //For this to work, negative keys need to be lower
     if(final_s[0] == '-')
     {
-        //cout << "number is negative" << endl;
         //These steps look unecessarily complicated, and they probably are
         //But I don't want to stray too much from the python
         final_s.erase(remove(final_s.begin(), final_s.end(), '-'), final_s.end()); //Get rid of the minus sign
-        //cout << "without minus sign: " << endl;
-        //cout << final_s << endl;
         stringstream string_s(final_s);
         string_s >> key;
         key += 1;
@@ -327,7 +301,6 @@ PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_
     if(has_same_place_)
     {
         one_away_cells_ = get_unit_cells(num_decimals_);
-        //cout << "one_away_cells_.size(): " << one_away_cells_.size() << endl;
     }
     if(has_within_two_)
     {

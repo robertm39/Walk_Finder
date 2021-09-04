@@ -158,7 +158,7 @@ void graph_test()
 
 void point_store_test()
 {
-    int num_decimals = 2;
+    int num_decimals = 0;
 
     //First test same_place and one_away
 
@@ -174,10 +174,10 @@ void point_store_test()
     cout << "testing" << endl;
     //Test a million pairs
     bool succeeded = true;
-    PointStore ps (num_decimals, true, true, false);
-    for(int i = 1; i < 1000000 + 1; i++)
+    PointStore ps (num_decimals, false, false, true);
+    for(int i = 1; i < 10000 + 1; i++)
     {
-        if(i % 10000 == 0) //output every 10,000 pairs
+        if(i % 1000 == 0) //output every 10,000 pairs
         {
             cout << i << endl;
         }
@@ -186,18 +186,30 @@ void point_store_test()
         b_float y1 = int_dist(gen) + fl_dist(gen);
 
         b_float angle = fl_dist(gen) * 2 * pi;
-        b_float x2 = x1 + cos(angle);
-        b_float y2 = y1 + sin(angle);
+        b_float r = fl_dist(gen) * 2;
+        b_float x2 = x1 + r*cos(angle);
+        b_float y2 = y1 + r*sin(angle);
 
         Point p1(x1, y1);
         Point p2(x2, y2);
 
         ps.add_node(0, p1);
 
-        NodeIterators same_it = ps.same_place(p1);
-        NodeIterators one_it = ps.one_away(p2);
+        //NodeIterators same_it = ps.same_place(p1);
+        NodeIterators one_it = ps.within_two(p2);
+        if(one_it.cend == one_it.cbegin)
+        {
+            cout << endl;
+            cout << "within two failed:" << endl;
+            cout << p1 << endl;
+            cout << p2 << endl;
+            cout << "dist:" << endl;
+            cout << (p2-p1).norm() << endl;
+            succeeded = false;
+            break; //we failed anyways
+        }
 
-        if(same_it.cend == same_it.cbegin)
+        /*if(same_it.cend == same_it.cbegin)
         {
             cout << "same place failed:" << endl;
             cout << p1 << endl;
@@ -214,7 +226,7 @@ void point_store_test()
             cout << (p2-p1).norm() << endl;
             succeeded = false;
             break; //we failed anyways
-        }
+        }*/
     }
     cout << "succeeded: " << succeeded << endl;
     /*cout << "testing: " << endl;
