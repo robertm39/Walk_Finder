@@ -5,7 +5,7 @@
 #include "walk.hpp"
 
 using std::set;
-using std::map;
+//using std::map;
 using std::make_pair;
 
 Walk::Walk(const Walk &walk)

@@ -1,16 +1,16 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <set>
 
-using std::map;
+using std::unordered_map;
 using std::set;
 
 //Mostly tested and worked
 class Graph
 {
     private:
-        map<int, set<int>> edges_from_nodes_;
+        unordered_map<int, set<int>> edges_from_nodes_;
         set<int> nodes_;
     public:
         Graph() {} //Just construct the graph after making it for ease of coding

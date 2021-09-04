@@ -1,12 +1,12 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <set>
 
 #include "constants.hpp"
 #include "point.hpp"
 
-using std::map;
+using std::unordered_map;
 using std::set;
 
 //Tested and worked
@@ -14,7 +14,7 @@ class Walk
 {
     private:
         set<int> nodes_;
-        map<int, Point> coords_; //stores points by value, so it doesn't matter if the originals are destroyed
+        unordered_map<int, Point> coords_; //stores points by value, so it doesn't matter if the originals are destroyed
     public:
         Walk() {}
         Walk(const Walk&); //Copy constructor instead of an explicit copy method
