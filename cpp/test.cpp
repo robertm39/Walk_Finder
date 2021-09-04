@@ -159,14 +159,22 @@ void disp_val_and_key(const b_float &val, int num_decimals)
     cout << "Key: " << key << endl << endl;
 }
 
+void disp_full_key(const Point &p, int num_decimals)
+{   
+    cout.flags(std::ios_base::fmtflags(std::ios_base::scientific));
+    cout << "point: " << p << endl;
+    cout.flags(std::ios_base::fmtflags(std::ios_base::hex));
+    cout << "full key: " << get_full_key(p, num_decimals) << endl << endl;
+}
+
 void point_store_test()
 {
-    b_float zero(0);
+    int num_decimals = 2;
+
+    /*b_float zero(0);
     b_float tenth("0.1");
     b_float tiny("0.00000001");
     b_float neg_tiny("-0.00000001");
-
-    int num_decimals = 2;
 
     disp_val_and_key(zero, num_decimals);
     disp_val_and_key(tenth, num_decimals); //the key should be 10 (or 9, I guess)
@@ -175,7 +183,13 @@ void point_store_test()
     disp_val_and_key(b_float(-3), num_decimals); //-400
     disp_val_and_key(b_float(5), num_decimals); // 500
     disp_val_and_key(b_float("5.23"), num_decimals); // 523 (0r 522)
-    disp_val_and_key(b_float("10.01"), num_decimals); // 1001
+    disp_val_and_key(b_float("10.01"), num_decimals); // 1001*/
+
+    //Now test get_full_key
+    disp_full_key(Point(0, 0), num_decimals);
+    disp_full_key(Point(1, 0), num_decimals);
+    disp_full_key(Point(0, 1), num_decimals);
+    disp_full_key(Point(1, 1), num_decimals);
 }
 
 //with this setup:
@@ -192,7 +206,7 @@ int main()
     //point_test();
     //walk_test();
     //graph_test();
-    point_store_test();
+    //point_store_test();
 
     return 0;
 }

@@ -41,3 +41,4 @@ class PointStore
 };
 
 int get_key(b_float num, int num_decimals); //temporarily add access for testing
+int get_full_key(const Point &p, int num_decimals);

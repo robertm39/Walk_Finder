@@ -309,7 +309,7 @@ int get_full_key(const Point &p, int num_decimals)
 
     //This will work with reasonably small ints as keys
     //and the graphs I'm working with aren't particularly wide
-    return (x_key < 16) ^ (y_key & 65535);
+    return (x_key << 16) ^ (y_key & 65535);
 }
 
 PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_one_away_(h1), has_same_place_(h2), has_within_two_(h3)
