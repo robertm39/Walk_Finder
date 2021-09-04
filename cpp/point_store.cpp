@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <utility>
 //#include <stdio.h>
 
 #include "point_store.hpp"
@@ -12,10 +13,11 @@ using std::sqrt;
 using std::string;
 using std::stringstream;
 using std::strncpy;
+using std::make_pair;
 
 // for testing
-using std::cout;
-using std::endl;
+//using std::cout;
+//using std::endl;
 
 //Make the circle methods
 const vector<PointStoreKey> SAME_CELLS {PointStoreKey( 0,  0),
@@ -302,14 +304,16 @@ int get_key(b_float num, int num_decimals)
     return key;
 }
 
-int get_full_key(const Point &p, int num_decimals)
+PointStoreKey get_point_key(const Point &p, int num_decimals)
 {
     int x_key = get_key(p.x(), num_decimals);
     int y_key = get_key(p.y(), num_decimals);
+    return PointStoreKey(x_key, y_key);
+}
 
-    //This will work with reasonably small ints as keys
-    //and the graphs I'm working with aren't particularly wide
-    return (x_key << 16) ^ (y_key & 65535);
+int get_full_key(const PointStoreKey &k)
+{
+    return (k.x() << 16) ^ (k.y() & 65535);
 }
 
 PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_one_away_(h1), has_same_place_(h2), has_within_two_(h3)
@@ -329,4 +333,77 @@ PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_
 
 void PointStore::add_node(int node, const Point &point)
 {
+    PointStoreKey p_key = get_point_key(point, num_decimals_);
+
+    if(has_same_place_)
+    {
+        for(const PointStoreKey &dp: SAME_CELLS)
+        {
+            PointStoreKey total_key = p_key + dp;
+            int real_key = get_full_key(total_key);
+            //I'm not including the points in the values
+            //because it takes up way too much memory
+            //you can just get the points from the Walk
+            same_place_.insert(make_pair(real_key, node));
+        }
+    }
+
+    if(has_one_away_)
+    {
+        for(const PointStoreKey &dp: one_away_cells_)
+        {
+            PointStoreKey total_key = p_key + dp;
+            int real_key = get_full_key(total_key);
+            one_away_.insert(make_pair(real_key, node));
+        }
+    }
+
+    if(has_within_two_)
+    {
+        for(const PointStoreKey &dp: within_two_cells_)
+        {
+            PointStoreKey total_key = p_key + dp;
+            int real_key = get_full_key(total_key);
+            within_two_.insert(make_pair(real_key, node));
+        }
+    }
+}
+
+NodeIterators PointStore::at_one(const Point &p)
+{
+    int key = get_full_key(get_point_key(p, num_decimals_));
+    vector<int> nodes;
+    if(one_away_.count(key)) //slightly redundant, but I don't think this will be the slowest part
+    {
+        nodes = one_away_.at(key);
+    }
+    auto begin_it = nodes.cbegin();
+    auto end_it = nodes.cend();
+    return NodeIterators(begin_it, end_it);
+}
+
+NodeIterators PointStore::same_place(const Point &p)
+{
+    int key = get_full_key(get_point_key(p, num_decimals_));
+    vector<int> nodes;
+    if(same_place_.count(key)) //slightly redundant, but I don't think this will be the slowest part
+    {
+        nodes = same_place_.at(key);
+    }
+    auto begin_it = nodes.cbegin();
+    auto end_it = nodes.cend();
+    return NodeIterators(begin_it, end_it);
+}
+
+NodeIterators PointStore::within_two(const Point &p)
+{
+    int key = get_full_key(get_point_key(p, num_decimals_));
+    vector<int> nodes;
+    if(within_two_.count(key)) //slightly redundant, but I don't think this will be the slowest part
+    {
+        nodes = within_two_.at(key);
+    }
+    auto begin_it = nodes.cbegin();
+    auto end_it = nodes.cend();
+    return NodeIterators(begin_it, end_it);
 }

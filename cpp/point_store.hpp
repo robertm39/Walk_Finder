@@ -39,6 +39,3 @@ class PointStore
         vector<int>::const_iterator within_two_cbegin(const Point&);
         vector<int>::const_iterator within_two_cend(const Point&);*/
 };
-
-int get_key(b_float num, int num_decimals); //temporarily add access for testing
-int get_full_key(const Point &p, int num_decimals);
