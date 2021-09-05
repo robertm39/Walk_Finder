@@ -10,3 +10,4 @@
 
 void grow_graph(Walk&, Graph&);
 void prune_graph(Walk&, Graph&, int);
+WalkAndGraph get_max_pruned_graph(Walk&, Graph&, int&);

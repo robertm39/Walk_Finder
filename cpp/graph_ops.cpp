@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "graph_ops.hpp"
+#include "graphs.hpp"
 
 using std::unordered_set;
 using std::cout;
@@ -170,4 +171,19 @@ void prune_graph(Walk &walk, Graph &graph, int min_edges)
         }
     } while (changed);
     
+}
+
+WalkAndGraph get_max_pruned_graph(Walk &walk, Graph &graph, int &prune)
+{
+    Walk prev_walk;
+    Graph prev_graph;
+
+    for(; walk.size() > 0;prune++)
+    {
+        prev_walk = walk;
+        prev_graph = graph;
+        prune_graph(walk, graph, prune);
+    }
+    prune -= 2; //This number has stepped beyond the correct value by two
+    return rename_nodes(WalkAndGraph(prev_walk, prev_graph));
 }

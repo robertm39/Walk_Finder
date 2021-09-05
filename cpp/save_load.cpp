@@ -23,15 +23,18 @@ bool exists(const string &filename)
 
 void save(const Walk &walk, const Graph &graph, const string &filename, bool overwrite=false)
 {
+    //All graphs go in this folder
+    string f_name = "graphs\\" + filename;
+
     //If the file already exists and we're not supposed to overwrite, return
-    cout << "checking for file" << endl;
-    if(exists(filename) && !overwrite)
+    //cout << "checking for file" << endl;
+    if(exists(f_name) && !overwrite)
     {
         return;
     }
 
     ofstream f_out;
-    f_out.open(filename);
+    f_out.open(f_name);
 
     f_out.precision(std::numeric_limits<b_float>::max_digits10);  // Ensure all potentially significant bits are output.
     f_out.flags(std::ios_base::fmtflags(std::ios_base::scientific)); // Use scientific format.
@@ -79,7 +82,7 @@ void save(const Walk &walk, const Graph &graph, const string &filename, bool ove
 WalkAndGraph load(const string &filename)
 {
     ifstream f_in;
-    f_in.open(filename);
+    f_in.open("graphs\\" + filename);
 
     string line;
     getline(f_in, line); //Skip the "NODES" line

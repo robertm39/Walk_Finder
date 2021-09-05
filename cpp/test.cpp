@@ -13,6 +13,7 @@
 
 using std::cout;
 using std::stringstream;
+using std::to_string;
 using std::endl;
 using std::sqrt;
 using std::asin;
@@ -307,6 +308,36 @@ void save_load_test()
     cout << "graph == graph2: " << (graph == graph2) << endl;
 }
 
+//Repeatedly grow and prune a graph.
+void grow_and_prune()
+{
+    WalkAndGraph moser_spindle = get_moser_spindle();
+    Walk &walk = moser_spindle.walk;
+    Graph &graph = moser_spindle.graph;
+    cout << "growing and pruning the Moser spindle" << endl;
+
+    string filename = "moser_spindle";
+
+    //Keep going until it gets too big
+    for(int i = 0; walk.size() < 1000; i++)
+    {
+        grow_graph(walk, graph);
+        filename += "_b";
+        save(walk, graph, filename + ".txt", true);
+
+        //Every node in the moser spindle has at least three edges
+        int prune = 3;
+        WalkAndGraph pruned = get_max_pruned_graph(walk, graph, prune);
+        walk = pruned.walk;
+        graph = pruned.graph;
+
+        cout << "Pruned to " << prune << " edges per node," << endl;
+        cout << walk.size() << " nodes left." << endl << endl;
+        filename += "_p" + to_string(prune);
+        save(walk, graph, filename + ".txt", true);
+    }
+}
+
 //with this setup:
 //int: 4 bytes
 //long: 4 bytes
@@ -321,7 +352,9 @@ int main()
     //it works
 
     //grow_graph_test();
-    save_load_test();
+    //save_load_test();
+    
+    grow_and_prune();
 
     return 0;
 }
