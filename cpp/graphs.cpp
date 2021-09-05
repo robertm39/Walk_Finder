@@ -95,6 +95,61 @@ WalkAndGraph get_moser_spindle()
     return WalkAndGraph(walk, graph);
 }
 
+WalkAndGraph get_small_triangle()
+{
+    Walk walk;
+    Graph graph;
+
+    walk.add_node(0, Point(0, 0));
+    walk.add_node(1, Point(b_float("0.5"), 0));
+
+    b_float sqrt_3 = sqrt(b_float(3));
+    walk.add_node(2, Point(b_float("0.25"), sqrt_3/4));
+
+    graph.add_node(0);
+    graph.add_node(1);
+    graph.add_node(2);
+
+    return WalkAndGraph(walk, graph);
+}
+
+WalkAndGraph get_points_on_line()
+{
+    Walk walk;
+    Graph graph;
+
+    walk.add_node(0, Point(0, 0));
+    walk.add_node(1, Point(b_float("0.1"), 0));
+    walk.add_node(2, Point(b_float("0.2"), 0));
+    walk.add_node(3, Point(b_float("0.3"), 0));
+    walk.add_node(4, Point(b_float("0.4"), 0));
+    walk.add_node(5, Point(b_float("0.5"), 0));
+    walk.add_node(6, Point(b_float("0.6"), 0));
+    walk.add_node(7, Point(b_float("0.7"), 0));
+    walk.add_node(8, Point(b_float("0.8"), 0));
+    walk.add_node(9, Point(b_float("0.9"), 0));
+    walk.add_node(10, Point(1, 0));
+
+    for(int i = 0; i <= 10; i++)
+        graph.add_node(i);
+    
+    graph.add_edge(0, 10);
+
+    return WalkAndGraph(walk, graph);
+}
+
+WalkAndGraph get_two_points()
+{
+    Walk walk;
+    Graph graph;
+
+    walk.add_node(0, Point(0, 0));
+    walk.add_node(1, Point(0, b_float("0.5")));
+
+    graph.add_node(0);
+    graph.add_node(1);
+}
+
 //Return an equivalent walk and graph, but with the nodes to start from zero and go upward without breaks.
 WalkAndGraph rename_nodes(const WalkAndGraph &wg)
 {

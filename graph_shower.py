@@ -100,7 +100,51 @@ def make_graph_png(nodes, edges, dims=(500, 500)):
     image = Image.fromarray(im_arr, mode='L')
     image.show()
 
-def make_graph_png_with_lines(nodes, edges, dims=(500, 500), inline=True):
+def get_line_array(im_arr, p1, p2):
+    image = Image.fromarray(im_arr, mode='L')
+    
+    drawer = ImageDraw.Draw(image)
+    color = tuple([1])
+    drawer.line([p1, p2], fill=color, width=1)
+    array = np.array(image, dtype=np.uint32)# / 255 #reduce the brightness
+    return array
+
+def make_smooth_graph_png_with_lines(nodes,
+                                        edges,
+                                        brightness=None,
+                                        dims=(500, 500),
+                                        filename=None,
+                                        inline=True):
+    
+    if brightness is None:
+        brightness = 16
+    
+    im_points, im_arr = get_im_points(nodes, dims)
+    total_im_arr = np.array(im_arr, dtype=np.uint32)
+    
+    for i1, i2 in edges:
+        p1, p2 = im_points[i1], im_points[i2]
+        line_arr = get_line_array(im_arr, p1, p2) * brightness
+        total_im_arr = total_im_arr + line_arr
+    
+    # total_im_arr = total_im_arr
+    # print(type(total_im_arr))
+    
+    total_im_arr = np.clip(total_im_arr, a_min=0, a_max=255)
+    total_im_arr = np.array(total_im_arr, dtype=np.uint8)
+    
+    image = Image.fromarray(total_im_arr, mode='L')
+    
+    if filename is None:
+        filename = 'reduced_8_2.png'
+    
+    image.save(filename, format='png')
+
+def make_graph_png_with_lines(nodes,
+                                edges,
+                                dims=(500, 500),
+                                filename=None,
+                                inline=True):
     im_points, im_arr = get_im_points(nodes, dims)
     
     image = Image.fromarray(im_arr, mode='L')
@@ -115,4 +159,7 @@ def make_graph_png_with_lines(nodes, edges, dims=(500, 500), inline=True):
     #     display(image)
     # else:
     #     image.show()
-    image.save('reduced_8_2.png', format='png')
+    if filename is None:
+        filename = 'reduced_8_2.png'
+    
+    image.save(filename, format='png')

@@ -838,19 +838,37 @@ def color_test():
     for node, color in coloring.items():
         print('Node {} has color {}'.format(node, color))
 
-def show_walk(nodes, walk, graph, dims=None, inline=False):
+def show_walk(nodes,
+              walk,
+              graph,
+              dims=None,
+              smooth=False,
+              brightness=None,
+              filename=None,
+              inline=False):
     coords_list = list()
     for node in nodes:
         coords = walk.coords_from_nodes[node]
         coords_list.append(coords)
     
     tensor = graph_shower.tensor_from_list(coords_list)
+    
     if dims is None:
         dims = (500, 500)
-    graph_shower.make_graph_png_with_lines(tensor,
-                                           graph.edges(),
-                                           dims=dims,
-                                           inline=inline)
+    
+    if smooth:
+        graph_shower.make_smooth_graph_png_with_lines(tensor,
+                                                      graph.edges(),
+                                                      dims=dims,
+                                                      brightness=brightness,
+                                                      filename=filename,
+                                                      inline=inline)
+    else:
+        graph_shower.make_graph_png_with_lines(tensor,
+                                               graph.edges(),
+                                               dims=dims,
+                                               filename=filename,
+                                               inline=inline)
 
 def file_test():
     # edges = ((0, 1),
@@ -1042,3 +1060,20 @@ def build_and_trim():
         r_filename = save_trimmed_spindles(r_filename=r_filename)
         print('\nBUILDING')
         r_filename = node_adder_test(r_filename=r_filename)
+
+def show_walk_from_file():
+    # f_base = 'cpp\\graphs\\moser_spindle_b_p4_b_p4_b_p6_b_p8_b_p8_b_p10'
+    f_base = 'cpp\\graphs\\small_triangle\\small_triangle_5'
+    filename = f_base + '.txt'
+    print('Loading {}'.format(filename))
+    walk, graph = file_reader.read_from_file(filename)
+    nodes = list(walk)
+    print('writing to image')
+    dims = (30000, 30000)
+    show_walk(nodes,
+              walk,
+              graph,
+              smooth=False,
+              brightness=32,
+              filename=f_base + '_bigger_image.png',
+              dims=dims)

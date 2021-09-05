@@ -309,33 +309,61 @@ void save_load_test()
 }
 
 //Repeatedly grow and prune a graph.
+//just have all the filenames have a number at the end
 void grow_and_prune()
 {
-    WalkAndGraph moser_spindle = get_moser_spindle();
-    Walk &walk = moser_spindle.walk;
-    Graph &graph = moser_spindle.graph;
-    cout << "growing and pruning the Moser spindle" << endl;
+    //WalkAndGraph wg = get_moser_spindle();
+    //WalkAndGraph wg = get_small_triangle();
+    WalkAndGraph wg = get_points_on_line();
 
-    string filename = "moser_spindle";
+    Walk &walk = wg.walk;
+    Graph &graph = wg.graph;
+    cout << "growing and pruning a 0.5 side length triangle" << endl;
+
+    string filename = "points_on_line\\points_on_line";
+
+    save(walk, graph, filename + "_0.txt", true);
 
     //Keep going until it gets too big
-    for(int i = 0; walk.size() < 1000; i++)
+    //for(int i = 1; i<2; i++)
+    for(int i = 1; walk.size() < 1000; i++)
     {
         grow_graph(walk, graph);
-        filename += "_b";
-        save(walk, graph, filename + ".txt", true);
+        //filename += "_b";
+        save(walk, graph, filename + "_" + to_string(i) + "_full.txt", true);
 
-        //Every node in the moser spindle has at least three edges
-        int prune = 3;
+        int prune = 0;
         WalkAndGraph pruned = get_max_pruned_graph(walk, graph, prune);
         walk = pruned.walk;
         graph = pruned.graph;
 
         cout << "Pruned to " << prune << " edges per node," << endl;
         cout << walk.size() << " nodes left." << endl << endl;
-        filename += "_p" + to_string(prune);
-        save(walk, graph, filename + ".txt", true);
+        //filename += "_p" + to_string(prune);
+        save(walk, graph, filename + "_" + to_string(i) + ".txt", true);
     }
+}
+
+void graph_stats(const string &filename)
+{
+    cout.precision(5);  // Ensure all potentially significant bits are output.
+    cout.flags(std::ios_base::fmtflags(std::ios_base::fixed)); // Use scientific format.
+
+    WalkAndGraph wg = load(filename);
+    const Walk &w = wg.walk;
+    const Graph &g = wg.graph;
+
+    cout << w.size() << " nodes," << endl;
+
+    int num_edges = 0;
+    for(auto i1 = w.cbegin(); i1 != w.cend(); i1++)
+    {
+        num_edges += g.num_edges(*i1);
+    }
+    double edges_per_node = double(num_edges) / w.size();
+    num_edges /= 2; //The edges were double-counted
+    cout << num_edges << " edges, " << endl;
+    cout << edges_per_node << " edges per node on average" << endl;
 }
 
 //with this setup:
@@ -355,6 +383,7 @@ int main()
     //save_load_test();
     
     grow_and_prune();
+    //graph_stats("moser_spindle_b_p4_b_p4_b_p6_b_p8_b_p8_b_p10.txt");
 
     return 0;
 }

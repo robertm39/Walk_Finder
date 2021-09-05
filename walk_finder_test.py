@@ -13,7 +13,7 @@ from torch.nn import Parameter as Parameter
 
 import graph_shower
 import walk_builder
-import point_store
+# import point_store
 
 def get_loss(edges, nodes):
     """
@@ -152,7 +152,8 @@ def main():
     # point_store.point_store_two_test()
     # point_store.point_store_same_test()
     # walk_builder.save_trimmed_spindles()
-    walk_builder.build_and_trim()
+    # walk_builder.build_and_trim()
+    walk_builder.show_walk_from_file()
 
 if __name__ == '__main__':
     main()
