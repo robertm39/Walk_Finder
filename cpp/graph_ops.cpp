@@ -30,7 +30,7 @@ void grow_graph(Walk &walk, Graph &graph)
         int n1 = *i1;
         checked.insert(n1);
         Point p1 = walk.coords(n1);
-
+        //cout << "node: " << n1 << endl;
         NodeIterators its = within_two_ps.within_two(p1);
         for(; its.cbegin != its.cend; its.cbegin++)
         {
@@ -39,6 +39,7 @@ void grow_graph(Walk &walk, Graph &graph)
             {
                 continue;
             }
+            //cout << n1 << " within two of " << n2 << endl;
 
             Point p2 = walk.coords(n2);
             Point diff = p2 - p1;
@@ -68,6 +69,7 @@ void grow_graph(Walk &walk, Graph &graph)
     //Look for connections and duplicates
     //this is also when the new points are assigned to nodes
     int n1 = walk.size(); //This is the first node not already in walk
+    int old_size = walk.size();
 
     int nodes_added = 0;
     int edges_added = 0;
@@ -85,6 +87,7 @@ void grow_graph(Walk &walk, Graph &graph)
                 //They're both the same
                 //just don't add this one
                 //and don't keep checking for other points it could be the same as
+                //cout << "found duplicate" << endl;
                 is_duplicate = true;
                 break;
             }
@@ -105,7 +108,9 @@ void grow_graph(Walk &walk, Graph &graph)
         {
             int n2 = *it.cbegin;
             b_float dist = (walk.coords(n2) - p).norm();
-            if(same(dist, 1))
+            //cout << "dist: " << endl;
+            //cout << dist << endl << endl;
+            if(same(dist, 1.0))
             {
                 //The node is a distance of one away, so put an edge between them
                 //when you do this, you only check nodes that have already been put into the point store
@@ -121,8 +126,15 @@ void grow_graph(Walk &walk, Graph &graph)
         n1++;
     }
 
-    double edges_per_new_node = double(edges_added) / nodes_added;
-    cout << nodes_added << "new nodes, " << edges_added << " new edges, " << edges_per_new_node << " edges per new node."<< endl;
+    int edges_each_node = 0; //Count each edge once for each of the new nodes it's in
+    for(int i = old_size; i < old_size + nodes_added; i++)
+    {
+        //cout << "counting edges for " << i << endl;
+        edges_each_node += graph.num_edges(i);
+    }
+
+    double edges_per_new_node = double(edges_each_node) / nodes_added;
+    cout << nodes_added << " new nodes, " << edges_added << " new edges, " << edges_per_new_node << " edges per new node."<< endl;
 }
 
 //Prune the graph until all nodes have at least a certain number of edges.

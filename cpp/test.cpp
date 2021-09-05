@@ -7,6 +7,8 @@
 #include "walk.hpp"
 #include "graph.hpp"
 #include "point_store.hpp"
+#include "graphs.hpp"
+#include "graph_ops.hpp"
 
 using std::cout;
 using std::stringstream;
@@ -256,6 +258,19 @@ void point_store_test()
     cout << "succeeded: " << succeeded << endl;*/
 }
 
+void grow_graph_test()
+{
+    WalkAndGraph moser_spindle = get_moser_spindle();
+    Walk &walk = moser_spindle.walk;
+    Graph &graph = moser_spindle.graph;
+
+    cout << walk.size() << " nodes" << endl << endl;
+
+    //Just grow once for now
+    grow_graph(walk, graph);
+    grow_graph(walk, graph);
+}
+
 //with this setup:
 //int: 4 bytes
 //long: 4 bytes
@@ -270,7 +285,8 @@ int main()
     //point_test();
     //walk_test();
     //graph_test();
-    point_store_test();
+    //point_store_test();
+    grow_graph_test();
 
     return 0;
 }

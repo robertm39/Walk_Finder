@@ -22,7 +22,7 @@ const Point operator-(const Point &p1, const Point &p2) {return Point(p1.x() - p
 const Point operator*(const Point &p1, const b_float &s) {return Point(p1.x() * s, p1.y() * s);}
 const Point operator*(const b_float &s, const Point &p1) {return Point(p1.x() * s, p1.y() * s);}
 
-const Point operator/(const Point &p1, const b_float &s) {return Point(p1.x() * s, p1.y() / s);}
+const Point operator/(const Point &p1, const b_float &s) {return Point(p1.x() / s, p1.y() / s);}
 
 ostream& operator<< (ostream& os, const Point &p)
 {

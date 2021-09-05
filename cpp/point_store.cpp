@@ -328,6 +328,7 @@ void PointStore::add_node_to_map(int key, int node, unordered_map<int, vector<in
         vectors_.push_back(v);
         m.insert(make_pair(key, v));
     }
+    //cout << "getting node-vector at key" << endl;
     vector<int> *v = m.at(key);
     v->push_back(node);
 }
@@ -406,12 +407,13 @@ NodeIterators PointStore::one_away(const Point &p)
     if(one_away_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
         //cout << "found a bucket" << endl;
+        //cout << "getting nodes one away" << endl;
         nodes = one_away_.at(key);
     } else {
-        cout << "failed at point:" << endl;
-        cout << p << endl;
-        cout << p_key << endl;
-        cout << key << endl;
+        //cout << "failed at point:" << endl;
+        //cout << p << endl;
+        //cout << p_key << endl;
+        //cout << key << endl;
         //dereferencing the end of a list is an error anyways
         //so this should be fine
         return NodeIterators(static_cast<vector<int>::const_iterator>(nullptr), static_cast<vector<int>::const_iterator>(nullptr));
@@ -428,6 +430,7 @@ NodeIterators PointStore::same_place(const Point &p)
     vector<int> *nodes;
     if(same_place_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
+        //cout << "getting nodes at some place" << endl;
         nodes = same_place_.at(key);
     } else {
         //dereferencing the end of a list is an error anyways
@@ -445,6 +448,7 @@ NodeIterators PointStore::within_two(const Point &p)
     vector<int> *nodes;
     if(within_two_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
+        //cout << "getting nodes within two" << endl;
         nodes = within_two_.at(key);
     } else {
         //dereferencing the end of a list is an error anyways

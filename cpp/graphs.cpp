@@ -1,12 +1,15 @@
 #include <cmath>
 #include <unordered_map>
 #include <utility>
+#include <iostream>
 
 #include "graphs.hpp"
 
 using std::sqrt;
 using std::unordered_map;
 using std::make_pair;
+using std::cout;
+using std::endl;
 
 Point rotated(const Point &p)
 {
@@ -53,6 +56,14 @@ WalkAndGraph get_moser_spindle()
     walk.add_node(6, g);
     graph.add_node(6);
 
+    //cout << a << endl;
+    //cout << b << endl;
+    //cout << c << endl;
+    //cout << d << endl;
+    //cout << e << endl;
+    //cout << f << endl;
+    //cout << g << endl;
+
     //Now add the edges
 
     //From A
@@ -79,6 +90,7 @@ WalkAndGraph get_moser_spindle()
     graph.add_edge(5, 6);
 
     //G is already covered
+    //cout << "graph constructed" << endl;
 
     return WalkAndGraph(walk, graph);
 }
@@ -108,6 +120,7 @@ WalkAndGraph rename_nodes(const WalkAndGraph &wg)
             int node2 = *i2;
             if(old_to_new.count(node2) >= 1)
             {
+                //cout << "getting new name for name" << endl;
                 int new_node_2 = old_to_new.at(node2);
                 new_graph.add_edge(new_node, new_node_2);
             }

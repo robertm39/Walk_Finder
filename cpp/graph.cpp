@@ -1,5 +1,6 @@
 //#pragma once
 
+#include <iostream>
 #include <utility>
 //#include <unordered_map>
 #include <set>
@@ -9,14 +10,17 @@
 using std::make_pair;
 //using std::unordered_map;
 using std::set;
+using std::cout;
+using std::endl;
 
 Graph::Graph(const Graph &g)
 {
     //Add all the nodes to this graph
     set<int>::const_iterator node_begin = g.nodes_cbegin();
     set<int>::const_iterator node_end = g.nodes_cend();
-    for(int n = *node_begin; node_begin!=node_end; node_begin++)
+    for(; node_begin!=node_end; node_begin++)
     {
+        int n = *node_begin;
         add_node(n);
     }
 
@@ -43,6 +47,7 @@ Graph::Graph(const Graph &g)
             {
                 continue;
             }
+            //cout << "adding edge to copy" << endl;
             add_edge(n1, n2);
         }
     }
@@ -50,18 +55,21 @@ Graph::Graph(const Graph &g)
 
 bool Graph::has_edge(int n1, int n2) const
 {
+    //cout << "getting edges at " << n1 << " to check for one"<< endl;
     set<int> adj = edges_from_nodes_.at(n1);
     return adj.find(n2) != adj.end();
 }
 
 int Graph::num_edges(int node) const
 {
+    //cout << "getting edges at " << node << endl;
     return edges_from_nodes_.at(node).size();
 }
 
 void Graph::add_edge(int n1, int n2)
 {
     //Don't bother to error-check for now
+    //cout << "inserting edge between " << n1 << " and " << n2 << endl;
     edges_from_nodes_.at(n1).insert(n2);
     edges_from_nodes_.at(n2).insert(n1);
 }
@@ -76,6 +84,8 @@ void Graph::add_node(int n)
 void Graph::remove_node(int n)
 {
     nodes_.erase(n);
+
+    //cout << "removing node " << n << endl;
     set<int> adj_to_n = edges_from_nodes_.at(n);
     //Remove all edges from this node
     edges_from_nodes_.erase(n);
@@ -83,6 +93,7 @@ void Graph::remove_node(int n)
     //Remove this node from other nodes' edges
     for(int adj: adj_to_n)
     {
+        //cout << "removing edges from " << adj << endl;
         edges_from_nodes_.at(adj).erase(n);
     }
 }
