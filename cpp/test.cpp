@@ -300,6 +300,31 @@ int main()
     //walk_test();
     //graph_test();
     //point_store_test();
+
+    //About to do the first real calculation with very high precision
+    //unleash the digits
+    //105 significant digits
+    //eps = 1e-100
+    //one hundred digits of accuracy
+    //let's see whether these edges are real or fake
+    //because twelve digits of accuracy wasn't enough
+
+    //so the edges seem real, but I want more digits
+    //two hundred digits of accuracy
+
+    //after checking with two hundred digits of accuracy, the edges are still real
+    //so this method actually works to find graphs with many edges per node
+    //and maybe it'll find a graph that can't be 4-colored
+    //or even one that can't be 5-colored
+
+    //but let's add some more digits just for fun
+    //I've checked the edges up to 300 digits
+    //it is so, so unlikely that they aren't real
+    //so I'm basically certain that they are real now
+
+    //let's move the number of significant digits down to a more manageable 105
+    //and epsilon to 1e-100
+
     grow_graph_test();
 
     return 0;
