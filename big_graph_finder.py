@@ -471,6 +471,7 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
     
     using_point_store=True
     
+    num_added_edges = 0
     print('{} new points to check'.format(len(new_points)))
     i = 1
     for c1 in new_points:
@@ -535,6 +536,12 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
         graph.add_node(current_node)
         for n2 in adjacent_nodes:
             graph.add_edge(current_node, n2)
+            
+            #so all along, both algorithms were working just fine
+            #but this one was just counting edges differently
+            #so I thought it was broken
+            #sail a bee
+            num_added_edges += 1
     
         walk.add_node(current_node, c1)
         ps1[c1] = current_node
@@ -550,7 +557,7 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
 
     num_new_nodes = len(walk) - max_node - 1
     s = '{} new nodes, {} new edges, {} average edges per new node'
-    print(s.format(num_new_nodes, new_edges, new_edges/num_new_nodes))
+    print(s.format(num_new_nodes, num_added_edges, new_edges/num_new_nodes))
     
     return ps1, ps2
 

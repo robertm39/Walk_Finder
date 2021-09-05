@@ -904,40 +904,40 @@ def node_adder_test(r_filename=None):
     # edges = [(0, 1)]
     # n = 2
     
-    # #The second test is the Moser Spindle
-    # edges = ((0, 1),
-    #           (0, 2),
-    #           (0, 3),
-    #           (1, 2),
-    #           (1, 4),
-    #           (2, 3),
-    #           (3, 5),
-    #           (3, 6),
-    #           (4, 5),
-    #           (4, 6),
-    #           (5, 6))
-    # n = 7
+    #The second test is the Moser Spindle
+    edges = ((0, 1),
+              (0, 2),
+              (0, 3),
+              (1, 2),
+              (1, 4),
+              (2, 3),
+              (3, 5),
+              (3, 6),
+              (4, 5),
+              (4, 6),
+              (5, 6))
+    n = 7
     
-    # nodes = range(n)
+    nodes = range(n)
     
-    # graph = Graph(nodes, edges)
-    # walk = build_walk(graph)
+    graph = Graph(nodes, edges)
+    walk = build_walk(graph)
     
-    #Now it isn't a test anymore
-    #load the spindle, built three times, reduced up to 8
-    if r_filename is None:
-        r_filename = 'spindle_3b_8r_1b_9r.txt'
-    walk, graph = file_reader.read_from_file(r_filename)
+    # #Now it isn't a test anymore
+    # #load the spindle, built three times, reduced up to 8
+    # if r_filename is None:
+    #     r_filename = 'spindle_3b_8r_1b_9r.txt'
+    # walk, graph = file_reader.read_from_file(r_filename)
     
-    # show_walk(nodes, walk, graph)
+    # # show_walk(nodes, walk, graph)
     
-    # filename_base = 'spindle_3b_8r_1b_9r_{}b.txt'
+    # # filename_base = 'spindle_3b_8r_1b_9r_{}b.txt'
     
-    #Make the filename programatically now
-    trimmed_r = r_filename[:-4] #get rid of the .txt
-    filename_base = trimmed_r + '_{}b.txt'
+    # #Make the filename programatically now
+    # trimmed_r = r_filename[:-4] #get rid of the .txt
+    # filename_base = trimmed_r + '_{}b.txt'
     
-    file_reader.write_to_file(walk, graph, filename_base.format(0))
+    # file_reader.write_to_file(walk, graph, filename_base.format(0))
     
     #Now we add the new nodes
     #We should end up with a diamond the first time
@@ -946,19 +946,19 @@ def node_adder_test(r_filename=None):
     
     #I'm only gonna try to build once
     #let's see if I can push the min number of edges per node up even more
-    for i in [1]:
-        filename = filename_base.format(i)
-        print('Starting {}'.format(filename))
+    for i in [1, 2]:
+        # filename = filename_base.format(i)
+        # print('Starting {}'.format(filename))
         ps1, ps2 = big_graph_finder.add_new_nodes(walk,
                                                   graph,
                                                   ps1=ps1,
                                                   ps2=ps2)
-        file_reader.write_to_file(walk, graph, filename_base.format(i))
-        print('Finished {}'.format(filename))
+        # file_reader.write_to_file(walk, graph, filename_base.format(i))
+        # print('Finished {}'.format(filename))
         
         # nodes = sorted(list(walk))
     
-    return filename
+    # return filename
         # show_walk(nodes, walk, graph)
     # print('Finished')
     

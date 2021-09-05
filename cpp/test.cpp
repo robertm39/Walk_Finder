@@ -265,9 +265,23 @@ void grow_graph_test()
     Graph &graph = moser_spindle.graph;
 
     cout << walk.size() << " nodes" << endl << endl;
+    // Test the spindle
+    /*for(int n1 = 0; n1 < 6; n1++)
+    {
+        for(int n2 = n1+1; n2 < 7; n2++)
+        {
+            if(graph.has_edge(n1, n2))
+            {
+                Point p1 = walk.coords(n1);
+                Point p2 = walk.coords(n2);
+                b_float dist = (p2 - p1).norm();
+                cout << dist << endl;
+            }
+        }
+    }*/
 
-    //Just grow once for now
     grow_graph(walk, graph);
+    //cout << walk.size() << " nodes" << endl << endl;
     grow_graph(walk, graph);
 }
 

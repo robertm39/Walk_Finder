@@ -109,10 +109,10 @@ vector<PointStoreKey> get_unit_cells(int num_decimals)
                         break;
                     }
 
-                    if(overall_dist < 1)
+                    if(overall_dist < 1.0) // 1
                     {
                         le_one = true;
-                    } else if(overall_dist > 1)
+                    } else if(overall_dist > 1.0) // 1
                     {
                         ge_one = true;
                     }
@@ -129,6 +129,18 @@ vector<PointStoreKey> get_unit_cells(int num_decimals)
             {
                 //Now we know whether to include this cell
                 PointStoreKey cell(dx, dy);
+
+                //Let's pad these for now to see if that fixes grow_graph
+                /*for(const PointStoreKey &k2: SAME_CELLS)
+                {
+                    PointStoreKey total = cell + k2;
+                    //result.push_back(cell);
+                    //if(result.(total) == result.end())
+                    //{
+                    result.push_back(total); //inefficient,
+                    //}
+                }*/
+
                 result.push_back(cell);
             }
 
@@ -305,6 +317,10 @@ PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_
     if(has_within_two_)
     {
         within_two_cells_ = get_within_two_cells(num_decimals_);
+        /*for(const PointStoreKey &k: within_two_cells_)
+        {
+            cout << k << endl;
+        }*/
     }
     
     //The dictionaries are already initialized

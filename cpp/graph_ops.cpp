@@ -6,6 +6,7 @@
 using std::unordered_set;
 using std::cout;
 using std::endl;
+using std::stringstream;
 
 //It'll be fine to allocate a new PointStore every time this is called
 void grow_graph(Walk &walk, Graph &graph)
@@ -51,7 +52,7 @@ void grow_graph(Walk &walk, Graph &graph)
                 //so the point at unit distance from both is their midpoint
                 Point midpoint = p1 + (diff / 2.0);
                 new_points.push_back(midpoint);
-            } else if (dist < 2.0) {
+            } else if (dist <= 2.0) {
                 //The two points have a distance of less than two
                 //There are two points both at unit distance from them
                 Point midpoint = p1 + (diff / 2.0);
@@ -134,7 +135,14 @@ void grow_graph(Walk &walk, Graph &graph)
     }
 
     double edges_per_new_node = double(edges_each_node) / nodes_added;
-    cout << nodes_added << " new nodes, " << edges_added << " new edges, " << edges_per_new_node << " edges per new node."<< endl;
+    stringstream edges_per_ss;
+    edges_per_ss.precision(5);
+    edges_per_ss.flags(std::ios_base::fmtflags(std::ios_base::fixed)); // use fixed format
+    edges_per_ss << edges_per_new_node;
+    string edges_per_string;
+    edges_per_ss >> edges_per_string;
+
+    cout << nodes_added << " new nodes, " << edges_added << " new edges, " << edges_per_string << " edges per new node."<< endl;
 }
 
 //Prune the graph until all nodes have at least a certain number of edges.
