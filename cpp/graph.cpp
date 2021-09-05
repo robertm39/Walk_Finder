@@ -54,6 +54,11 @@ bool Graph::has_edge(int n1, int n2) const
     return adj.find(n2) != adj.end();
 }
 
+int Graph::num_edges(int node) const
+{
+    return edges_from_nodes_.at(node).size();
+}
+
 void Graph::add_edge(int n1, int n2)
 {
     //Don't bother to error-check for now

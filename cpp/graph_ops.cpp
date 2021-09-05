@@ -125,7 +125,29 @@ void grow_graph(Walk &walk, Graph &graph)
     cout << nodes_added << "new nodes, " << edges_added << " new edges, " << edges_per_new_node << " edges per new node."<< endl;
 }
 
-void prune_graph(Walk &walk, Graph &graph)
+//Prune the graph until all nodes have at least a certain number of edges.
+void prune_graph(Walk &walk, Graph &graph, int min_edges)
 {
-
+    bool changed = false;
+    do
+    {
+        changed = false;
+        vector<int> to_remove;
+        for(auto i1 = walk.cbegin(); i1 != walk.cend(); i1++)
+        {
+            int node = *i1;
+            if(graph.num_edges(node) < min_edges)
+            {
+                //This node does not have enough edges, so prune it away
+                to_remove.push_back(node);
+                changed = true;
+            }
+        }
+        for(int node: to_remove)
+        {
+            walk.remove_node(node);
+            graph.remove_node(node);
+        }
+    } while (changed);
+    
 }

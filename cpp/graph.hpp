@@ -18,6 +18,7 @@ class Graph
         int size() const {return nodes_.size();}
         bool has_node(int n) const {return nodes_.find(n) != nodes_.end();}
         bool has_edge(int, int) const;
+        int num_edges(int) const;
         void add_edge(int, int);
 
         void add_node(int);
