@@ -35,4 +35,7 @@ const Point operator*(const b_float&, const Point&);
 
 const Point operator/(const Point&, const b_float&);
 
+bool operator==(const Point&, const Point&);
+bool operator!=(const Point&, const Point&);
+
 ostream& operator<<(ostream&, const Point&);

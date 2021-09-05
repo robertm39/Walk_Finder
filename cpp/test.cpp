@@ -9,6 +9,7 @@
 #include "point_store.hpp"
 #include "graphs.hpp"
 #include "graph_ops.hpp"
+#include "save_load.hpp"
 
 using std::cout;
 using std::stringstream;
@@ -285,6 +286,27 @@ void grow_graph_test()
     grow_graph(walk, graph);
 }
 
+void save_load_test()
+{
+    WalkAndGraph moser_spindle = get_moser_spindle();
+    Walk &walk = moser_spindle.walk;
+    Graph &graph = moser_spindle.graph;
+
+    cout << "saving" << endl;
+    save(walk, graph, "spindle_save_test.txt", true);
+    cout << "loading" << endl;
+    WalkAndGraph loaded = load("spindle_save_test.txt");
+    cout << "loaded" << endl;
+
+    Walk &walk2 = loaded.walk;
+    Graph &graph2 = loaded.graph;
+
+    cout << "walk == walk: " << (walk == walk) << endl;
+    cout << "graph == graph: " << (graph == graph) << endl;
+    cout << "walk == walk2: " << (walk == walk2) << endl;
+    cout << "graph == graph2: " << (graph == graph2) << endl;
+}
+
 //with this setup:
 //int: 4 bytes
 //long: 4 bytes
@@ -298,7 +320,8 @@ int main()
 
     //it works
 
-    grow_graph_test();
+    //grow_graph_test();
+    save_load_test();
 
     return 0;
 }

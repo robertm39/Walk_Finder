@@ -35,11 +35,9 @@ class Graph
         set<int>::iterator nodes_begin() {return nodes_.begin();}
         set<int>::iterator nodes_end() {return nodes_.end();}
 
-        //I won't actually use these
-        /*set<int>::reverse_iterator n_rbegin() {return nodes_.rbegin();}
-        set<int>::reverse_iterator n_rend() {return nodes_.rend();}*/
         set<int>::const_iterator nodes_cbegin() const {return nodes_.cbegin();}
         set<int>::const_iterator nodes_cend() const {return nodes_.cend();}
-        /*set<int>::const_reverse_iterator n_crbegin() const {return nodes_.crbegin();}
-        set<int>::const_reverse_iterator n_crend() const {return nodes_.crend();}*/
 };
+
+bool operator==(const Graph&, const Graph&);
+bool operator!=(const Graph&, const Graph&);

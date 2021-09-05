@@ -55,6 +55,10 @@ Graph::Graph(const Graph &g)
 
 bool Graph::has_edge(int n1, int n2) const
 {
+    if(!(has_node(n1) && has_node(n2)))
+    {
+        return false;
+    }
     //cout << "getting edges at " << n1 << " to check for one"<< endl;
     set<int> adj = edges_from_nodes_.at(n1);
     return adj.find(n2) != adj.end();
@@ -96,4 +100,37 @@ void Graph::remove_node(int n)
         //cout << "removing edges from " << adj << endl;
         edges_from_nodes_.at(adj).erase(n);
     }
+}
+
+//Return true if every node and edge in g1 is also in g2, false otherwise.
+bool equals_one_way(const Graph &g1, const Graph &g2)
+{
+    for(auto n_i = g1.nodes_cbegin(); n_i != g1.nodes_cend(); n_i++)
+    {
+        int n1 = *n_i;
+        if(!g2.has_node(n1))
+        {
+            return false;
+        }
+        auto e_end = g1.edges_cend(n1);
+        for(auto e_begin = g1.edges_cbegin(n1); e_begin != e_end; e_begin++)
+        {
+            int n2 = *e_begin;
+            if(!g2.has_edge(n1, n2))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool operator==(const Graph &g1, const Graph &g2)
+{
+    return equals_one_way(g1, g2) && equals_one_way(g2, g1);
+}
+
+bool operator!=(const Graph &g1, const Graph &g2)
+{
+    return !(g1 == g2);
 }

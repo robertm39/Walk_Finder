@@ -37,3 +37,43 @@ const Point& Walk::coords(int n) const
 {
     return coords_.at(n);
 }
+
+bool nodes_same_one_way(const Walk &w1, const Walk &w2)
+{
+    for(auto i = w1.cbegin(); i != w1.cend(); i++)
+    {
+        int node = *i;
+        if(!w2.has_node(node))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool coords_same(const Walk &w1, const Walk &w2)
+{
+    for(auto i = w1.cbegin(); i != w1.cend(); i++)
+    {
+        int node = *i;
+        if(w1.coords(node) != w2.coords(node))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool operator==(const Walk &w1, const Walk &w2)
+{
+    if(!(nodes_same_one_way(w1, w2) && nodes_same_one_way(w2, w1)))
+    {
+        return false;
+    }
+    return coords_same(w1, w2);
+}
+
+bool operator!=(const Walk &w1, const Walk &w2)
+{
+    return !(w1 == w2);
+}

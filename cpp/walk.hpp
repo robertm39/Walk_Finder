@@ -31,3 +31,6 @@ class Walk
         set<int>::const_iterator cbegin() const {return nodes_.cbegin();}
         set<int>::const_iterator cend() const {return nodes_.cend();}
 };
+
+bool operator==(const Walk&, const Walk&);
+bool operator!=(const Walk&, const Walk&);
