@@ -542,7 +542,7 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
             #so I thought it was broken
             #sail a bee
             num_added_edges += 1
-    
+        
         walk.add_node(current_node, c1)
         ps1[c1] = current_node
         ps2[c1] = current_node
@@ -554,7 +554,7 @@ def add_new_nodes(walk, graph, ps1=None, ps2=None, eps=EPS):
         if node <= max_node:
             continue #Only check new nodes
         new_edges += len(graph.adjacent(node))
-
+        
     num_new_nodes = len(walk) - max_node - 1
     s = '{} new nodes, {} new edges, {} average edges per new node'
     print(s.format(num_new_nodes, num_added_edges, new_edges/num_new_nodes))
