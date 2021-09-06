@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <time.h>
 
 #include "constants.hpp"
 #include "point.hpp"
@@ -22,6 +23,7 @@ using std::sin;
 using std::default_random_engine;
 using std::uniform_int_distribution;
 using std::uniform_real_distribution;
+using std::time;
 
 //code adapted from
 //https://www.boost.org/doc/libs/1_77_0/libs/multiprecision/doc/html/boost_multiprecision/tut/input_output.html
@@ -310,39 +312,64 @@ void save_load_test()
 
 //Repeatedly grow and prune a graph.
 //just have all the filenames have a number at the end
+//time code borrowed from
+//https://stackoverflow.com/questions/997946/how-to-get-current-time-and-date-in-c
 void grow_and_prune()
 {
-    //WalkAndGraph wg = get_moser_spindle();
-    //WalkAndGraph wg = get_small_triangle();
-    //WalkAndGraph wg = get_points_on_line();
-    WalkAndGraph wg = get_two_square_points();
 
-    Walk &walk = wg.walk;
-    Graph &graph = wg.graph;
-    cout << "growing and pruning a two points sqrt(2) apart" << endl;
+    cout.precision(5);  // Ensure all potentially significant bits are output.
+    cout.flags(std::ios_base::fmtflags(std::ios_base::fixed)); // Use scientific format.
 
-    string filename = "square\\square";
+    cout << "timing growing and pruning" << endl;
 
-    save(walk, graph, filename + "_0.txt", true);
+    //Time this for optimization
+    double total_time = 0;
+    int num_samples = 5;
 
-    //Keep going until it gets too big
-    //for(int i = 1; i<2; i++)
-    for(int i = 1; walk.size() <= 1000; i++)
+    for(int samples = 0; samples < num_samples; samples++)
     {
-        grow_graph(walk, graph);
-        //filename += "_b";
-        save(walk, graph, filename + "_" + to_string(i) + "_full.txt", true);
+        time_t start = time(nullptr);
 
-        int prune = 0;
-        WalkAndGraph pruned = get_max_pruned_graph(walk, graph, prune);
-        walk = pruned.walk;
-        graph = pruned.graph;
+        //WalkAndGraph wg = get_moser_spindle();
+        //WalkAndGraph wg = get_small_triangle();
+        WalkAndGraph wg = get_points_on_line();
+        //WalkAndGraph wg = get_two_points();
+        //WalkAndGraph wg = get_two_square_points();
 
-        cout << "Pruned to " << prune << " edges per node," << endl;
-        cout << walk.size() << " nodes left." << endl << endl;
-        //filename += "_p" + to_string(prune);
-        save(walk, graph, filename + "_" + to_string(i) + "_p" + to_string(prune) + ".txt", true);
+        Walk &walk = wg.walk;
+        Graph &graph = wg.graph;
+        cout << "growing and pruning eleven points" << endl;
+
+        //string filename = "square\\square";
+
+        //save(walk, graph, filename + "_0.txt", true);
+
+        //Keep going until it gets too big
+        //for(int i = 1; i<2; i++)
+        for(int i = 1; walk.size() <= 500; i++) //do one more
+        {
+            grow_graph(walk, graph);
+            //filename += "_b";
+            //save(walk, graph, filename + "_" + to_string(i) + "_full.txt", true);
+
+            int prune = 0;
+            WalkAndGraph pruned = get_max_pruned_graph(walk, graph, prune);
+            walk = pruned.walk;
+            graph = pruned.graph;
+
+            //cout << "Pruned to " << prune << " edges per node," << endl;
+            cout << walk.size() << " nodes left." << endl;// << endl;
+            //filename += "_p" + to_string(prune);
+            //save(walk, graph, filename + "_" + to_string(i) + "_p" + to_string(prune) + ".txt", true);
+        }
+        time_t end = time(nullptr);
+        double elapsed_seconds = end-start;
+        total_time += elapsed_seconds;
+        cout << "growing and pruning took " << elapsed_seconds << " seconds" << endl;
     }
+
+    double average_time = total_time / num_samples;
+    cout << endl << "Average time: " << average_time << endl;
 }
 
 void graph_stats(const string &filename)

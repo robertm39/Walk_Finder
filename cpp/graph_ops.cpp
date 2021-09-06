@@ -143,7 +143,7 @@ void grow_graph(Walk &walk, Graph &graph)
     string edges_per_string;
     edges_per_ss >> edges_per_string;
 
-    cout << nodes_added << " new nodes, " << edges_added << " new edges, " << edges_per_string << " edges per new node."<< endl;
+    //cout << nodes_added << " new nodes, " << edges_added << " new edges, " << edges_per_string << " edges per new node."<< endl;
 }
 
 //Prune the graph until all nodes have at least a certain number of edges.
