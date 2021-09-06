@@ -315,13 +315,13 @@ void grow_and_prune()
     //WalkAndGraph wg = get_moser_spindle();
     //WalkAndGraph wg = get_small_triangle();
     //WalkAndGraph wg = get_points_on_line();
-    WalkAndGraph wg = get_two_points();
+    WalkAndGraph wg = get_two_square_points();
 
     Walk &walk = wg.walk;
     Graph &graph = wg.graph;
-    cout << "growing and pruning a two points 0.5 apart" << endl;
+    cout << "growing and pruning a two points sqrt(2) apart" << endl;
 
-    string filename = "two_points\\two_points";
+    string filename = "square\\square";
 
     save(walk, graph, filename + "_0.txt", true);
 
@@ -341,7 +341,7 @@ void grow_and_prune()
         cout << "Pruned to " << prune << " edges per node," << endl;
         cout << walk.size() << " nodes left." << endl << endl;
         //filename += "_p" + to_string(prune);
-        save(walk, graph, filename + "_" + to_string(i) + ".txt", true);
+        save(walk, graph, filename + "_" + to_string(i) + "_p" + to_string(prune) + ".txt", true);
     }
 }
 

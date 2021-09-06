@@ -152,6 +152,20 @@ WalkAndGraph get_two_points()
     return WalkAndGraph(walk, graph);
 }
 
+WalkAndGraph get_two_square_points()
+{
+    Walk walk;
+    Graph graph;
+
+    walk.add_node(0, Point(0, 0));
+    walk.add_node(1, Point(0, sqrt(b_float(2))));
+
+    graph.add_node(0);
+    graph.add_node(1);
+
+    return WalkAndGraph(walk, graph);
+}
+
 //Return an equivalent walk and graph, but with the nodes to start from zero and go upward without breaks.
 WalkAndGraph rename_nodes(const WalkAndGraph &wg)
 {

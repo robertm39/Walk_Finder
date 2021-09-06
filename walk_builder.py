@@ -1063,17 +1063,17 @@ def build_and_trim():
 
 def show_walk_from_file():
     # f_base = 'cpp\\graphs\\moser_spindle_b_p4_b_p4_b_p6_b_p8_b_p8_b_p10'
-    f_base = 'cpp\\graphs\\two_points\\two_points_7'
+    f_base = 'cpp\\graphs\\square\\square_6_p8'
     filename = f_base + '.txt'
     print('Loading {}'.format(filename))
     walk, graph = file_reader.read_from_file(filename)
     nodes = list(walk)
     print('writing to image')
-    dims = (1000, 1000)
+    dims = (10000, 10000)
     show_walk(nodes,
               walk,
               graph,
-              smooth=True,
-              brightness=24,
-              filename=f_base + '_image_smooth_3.png',
+              smooth=False,
+              brightness=4,
+              filename=f_base + '_very_big_image.png',
               dims=dims)

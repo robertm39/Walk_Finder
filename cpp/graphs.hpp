@@ -10,4 +10,5 @@ WalkAndGraph get_moser_spindle();
 WalkAndGraph get_small_triangle();
 WalkAndGraph get_points_on_line();
 WalkAndGraph get_two_points();
+WalkAndGraph get_two_square_points();
 WalkAndGraph rename_nodes(const WalkAndGraph&);
