@@ -314,19 +314,20 @@ void grow_and_prune()
 {
     //WalkAndGraph wg = get_moser_spindle();
     //WalkAndGraph wg = get_small_triangle();
-    WalkAndGraph wg = get_points_on_line();
+    //WalkAndGraph wg = get_points_on_line();
+    WalkAndGraph wg = get_two_points();
 
     Walk &walk = wg.walk;
     Graph &graph = wg.graph;
-    cout << "growing and pruning a 0.5 side length triangle" << endl;
+    cout << "growing and pruning a two points 0.5 apart" << endl;
 
-    string filename = "points_on_line\\points_on_line";
+    string filename = "two_points\\two_points";
 
     save(walk, graph, filename + "_0.txt", true);
 
     //Keep going until it gets too big
     //for(int i = 1; i<2; i++)
-    for(int i = 1; walk.size() < 1000; i++)
+    for(int i = 1; walk.size() <= 1000; i++)
     {
         grow_graph(walk, graph);
         //filename += "_b";
