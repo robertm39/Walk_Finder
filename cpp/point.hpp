@@ -1,23 +1,27 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 
 #include "constants.hpp"
+#include "point_impl.hpp"
 
 using std::ostream;
+using std::shared_ptr;
 
 //For now, leave it const
 class Point
 {
     private:
-        const b_float x_;
-        const b_float y_;
+        //const b_float x_;
+        //const b_float y_;
+        shared_ptr<PointImpl> impl_;
     public:
-        Point(b_float x, b_float y): x_(x), y_(y) {}
-        b_float x() const {return x_;}
-        b_float y() const {return y_;}
-        b_float norm() const {return sqrt(x_*x_ + y_*y_);}
-        Point perp() const {return Point(-y_, x_);}
+        Point(b_float x, b_float y): impl_(new PointImpl(x, y)) {}
+        b_float x() const {return impl_->x();}
+        b_float y() const {return impl_->y();}
+        b_float norm() const {return impl_->norm();}
+        Point perp() const {return Point(-y(), x());}
 };
 
 const b_float dist(const Point&, const Point&);
