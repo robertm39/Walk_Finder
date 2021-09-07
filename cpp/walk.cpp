@@ -21,7 +21,7 @@ Walk::Walk(const Walk &walk)
     }
 }
 
-void Walk::add_node(int n, const Point &p)
+void Walk::add_node(int n, Point p)
 {
     nodes_.insert(n);
     coords_.insert(make_pair(n, p));
@@ -33,7 +33,7 @@ void Walk::remove_node(int n)
     coords_.erase(n);
 }
 
-const Point& Walk::coords(int n) const
+Point Walk::coords(int n) const
 {
     return coords_.at(n);
 }

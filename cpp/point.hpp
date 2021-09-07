@@ -17,7 +17,7 @@ class Point
         //const b_float y_;
         shared_ptr<PointImpl> impl_;
     public:
-        Point(b_float x, b_float y): impl_(new PointImpl(x, y)) {}
+        Point(const b_float &x, const b_float &y): impl_(new PointImpl(x, y)) {}
         b_float x() const {return impl_->x();}
         b_float y() const {return impl_->y();}
         b_float norm() const {return impl_->norm();}

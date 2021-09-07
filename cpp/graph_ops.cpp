@@ -75,7 +75,7 @@ void grow_graph(Walk &walk, Graph &graph)
 
     int nodes_added = 0;
     int edges_added = 0;
-    for(const Point &p: new_points)
+    for (Point p: new_points)
     {
         //See if this point is a duplicate of any points, old or already-processed new
         bool is_duplicate = false;
