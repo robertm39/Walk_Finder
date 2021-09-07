@@ -37,32 +37,15 @@ unordered_map<int, vector<PointStoreKey>> UNIT_CELL_CACHE;
 
 vector<Point> get_corner_disps(const b_float &width, bool strict=false)
 {
-    if(strict)
-    {
-        vector<Point> corner_disps = {Point(0,       0      ),
-                                      Point(0,       width/2),
-                                      Point(0,       width  ),
-                                      Point(width/2, width  ),
-                                      Point(width,   width  ),
-                                      Point(width,   width/2),
-                                      Point(width,   0      ),
-                                      Point(width/2, 0      )};
-        return corner_disps;
-    }
-    else //this one doesn't quite go out to the edges
-    {
-        //simulating subcells to see how many cells it would cut
-        b_float margin = width * (b_float(99) / 200);
-        vector<Point> corner_disps = {Point(margin,         margin        ),
-                                      Point(margin,         width/2       ),
-                                      Point(margin,         width - margin),
-                                      Point(width/2,        width - margin),
-                                      Point(width - margin, width - margin),
-                                      Point(width - margin, width/2       ),
-                                      Point(width - margin, margin        ),
-                                      Point(width/2,        margin        )};
-        return corner_disps;
-    }
+    vector<Point> corner_disps = {Point(0,       0      ),
+                                    Point(0,       width/2),
+                                    Point(0,       width  ),
+                                    Point(width/2, width  ),
+                                    Point(width,   width  ),
+                                    Point(width,   width/2),
+                                    Point(width,   0      ),
+                                    Point(width/2, 0      )};
+    return corner_disps;
 }
 
 vector<PointStoreKey> get_unit_cells(int num_decimals, bool strict=true)
@@ -358,23 +341,13 @@ bool PointStore::point_is_stable(Point p)
 
 PointStore::PointStore(int n, bool h1, bool h2, bool h3): num_decimals_(n), has_one_away_(h1), has_same_place_(h2), has_within_two_(h3)
 {
-    
-    //How wide a single cell is
     width_ = pow(b_float(10), -num_decimals_);
-    margin_ = width_ * (b_float(9) / 20); //A slightly larger margin, to be safe
+    margin_ = 2*EPS;
+
     //Initialize the cell collections
     if(has_same_place_)
     {
-        one_away_cells_loose_ = get_unit_cells(num_decimals_, false);
-        /*for(auto k: one_away_cells_loose_)
-        {
-            cout << k << endl;
-        }*/
-        cout << "loose cells: " << one_away_cells_loose_.size() << endl;
-
-        one_away_cells_strict_ = get_unit_cells(num_decimals_, true);
-
-        cout << "strict cells: " << one_away_cells_strict_.size() << endl;
+        one_away_cells_ = get_unit_cells(num_decimals_);
     }
     if(has_within_two_)
     {
@@ -433,25 +406,12 @@ void PointStore::add_node(int node, Point point)
 
     if(has_one_away_)
     {
-        if(point_is_stable(point))
+        for(const PointStoreKey &dp: one_away_cells_)
         {
-            for(const PointStoreKey &dp: one_away_cells_loose_)
-            {
-                PointStoreKey total_key = p_key + dp;
-                int real_key = get_full_key(total_key);
+            PointStoreKey total_key = p_key + dp;
+            int real_key = get_full_key(total_key);
 
-                add_node_to_map(real_key, node, one_away_);
-            }
-        }
-        else
-        {
-            for(const PointStoreKey &dp: one_away_cells_strict_)
-            {
-                PointStoreKey total_key = p_key + dp;
-                int real_key = get_full_key(total_key);
-
-                add_node_to_map(real_key, node, one_away_);
-            }
+            add_node_to_map(real_key, node, one_away_);
         }
     }
 
@@ -463,7 +423,6 @@ void PointStore::add_node(int node, Point point)
             int real_key = get_full_key(total_key);
 
             add_node_to_map(real_key, node, within_two_);
-            //within_two_.insert(make_pair(real_key, node));
         }
     }
 }
@@ -477,16 +436,8 @@ NodeIterators PointStore::one_away(Point p)
     vector<int> *nodes;
     if(one_away_.count(key) >= 1) //slightly redundant, but I don't think this will be the slowest part
     {
-        //cout << "found a bucket" << endl;
-        //cout << "getting nodes one away" << endl;
         nodes = one_away_.at(key);
     } else {
-        //cout << "failed at point:" << endl;
-        //cout << p << endl;
-        //cout << p_key << endl;
-        //cout << key << endl;
-        //dereferencing the end of a list is an error anyways
-        //so this should be fine
         return NodeIterators(static_cast<vector<int>::const_iterator>(nullptr), static_cast<vector<int>::const_iterator>(nullptr));
     }
     //cout << "Found " << nodes->size() << " node(s)" << endl;

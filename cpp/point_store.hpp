@@ -21,8 +21,7 @@ class PointStore
         b_float width_;
         b_float margin_;
         vector< vector<int>* > vectors_; //Store the pointers to the lists so that we can delete them later (??)
-        vector<PointStoreKey> one_away_cells_strict_;//may not be used
-        vector<PointStoreKey> one_away_cells_loose_;//may not be used
+        vector<PointStoreKey> one_away_cells_;//may not be used
         vector<PointStoreKey> within_two_cells_;//may not be used
         unordered_map<int, vector<int>*> one_away_;//may not be used
         unordered_map<int, vector<int>*> same_place_;//may not be used
